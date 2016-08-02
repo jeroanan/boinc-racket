@@ -98,12 +98,21 @@
                             override-file-present
                             network-wifi-only))
 
-(define (get-node stats stat-name [nodes (list)])
+(define (get-node stats stat-name)
   (if (eq? (first (first stats)) stat-name)
       (first stats)
       (if (empty? (rest stats))
           ""
           (get-node (rest stats) stat-name))))
+
+(define (get-nodes stats stat-name [nodes (list)])
+  (if (eq? (first (first stats)) stat-name)
+      (if (empty? (rest stats))
+          nodes
+          (get-nodes (rest stats) stat-name (append nodes (list (first stats)))))
+      (if (empty? (rest stats))
+          nodes
+          (get-nodes (rest stats) stat-name nodes))))
 
 (define (get-stat-value stats stat-name)
   (let ((stat-entry (get-node stats stat-name)))
@@ -214,6 +223,7 @@
          (core-client-release (gses 'core_client_release))
          (executing-as-daemon (gses 'executing_as_daemon))
          (platform (gses 'platform))
+         (workunits (get-nodes client-state 'workunit))
          (global-preferences (parse-global-preferences (gse 'global_preferences)))
          (result (get-state-result
                   host-info
@@ -226,7 +236,7 @@
                   executing-as-daemon
                   platform
                   global-preferences)))
-    client-state))
+    workunits))
 
 (define (get-host-info)
   (let* ((host-info-xml (xexpr-get-document-element (get-host-info-xml)))
