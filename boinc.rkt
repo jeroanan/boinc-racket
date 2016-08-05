@@ -13,11 +13,15 @@
 (define (get-node stats stat-name)
   (if (empty? stats)
       (list)
-      (if (eq? (first (first stats)) stat-name)
-           (first stats)
-           (if (empty? (rest stats))
-               (list)
-               (get-node (rest stats) stat-name)))))
+      (if (empty? (first stats))
+          (if (empty? (rest stats))
+              (list)
+              (get-node (rest stats) stat-name))
+          (if (eq? (first (first stats)) stat-name)
+              (first stats)
+              (if (empty? (rest stats))
+                  (list)
+                  (get-node (rest stats) stat-name))))))
 
 (define (get-nodes stats stat-name [nodes (list)])  
   (if (eq? (first (first stats)) stat-name)
@@ -188,6 +192,7 @@
         ((this-project (sublists-only (first stats)))
          (gs (lambda (x) (get-stat-value this-project x)))
          (gse (lambda (x) (sublists-only (get-node this-project x))))
+         (gns (lambda (x) (get-nodes this-project x)))
          (p (project (gs 'master_url)
                      (gs 'project_name)
                      (gs 'symstore)
@@ -226,7 +231,7 @@
                      (gs 'dont_use_dcf)
                      (parse-into-two-member-struct (gse 'rsc_backoff_time) name-value 'name 'value)
                      (parse-into-two-member-struct (gse 'rsc_backoff_interval) name-value 'name 'value)
-                     (parse-gui-urls (cdddr (gse 'gui_urls)))
+                     (parse-gui-urls (get-nodes (gse 'gui_urls) 'gui_url))
                      (gs 'sched_priority)
                      (gs 'last_rpc_time)
                      (gs 'project_files_downloaded_time)
@@ -239,54 +244,39 @@
   (define (parse-gui-urls stats [output (list)])
     (if (empty? stats)
         output
-        (let* ((this-url (first stats))
+        (let* ((this-url (sublists-only (rest (first stats))))
               (gs (lambda (x) (get-stat-value this-url x)))
               (gu (gui-url (gs 'name)
                            (gs 'description)
                            (gs 'url)))
-               (new-ouput (append list (list gu))))
+               (new-output (append output (list gu))))
           (if (empty? (rest stats))
-              output
-              (parse-gui-urls (rest stats) new-ouput)))))
-
+              new-output
+              (parse-gui-urls (rest stats) new-output)))))
 
   (define (parse-app stats [output (list)])
-    (if (empty? stats)
-        output
-        (let* ((this-app (sublists-only (first stats)))
-               (gs (lambda (x) (get-stat-value this-app x)))
-               (gse (lambda (x) (sublists-only (get-node this-app x))))
-               (new-output (append output (list (boinc-app
-                                                 (gs 'name)
-                                                 (gs 'user_friendly_name)
-                                                 (gs 'non_cpu_intensive))))))
-          (if (empty? (rest stats))
-              new-output
-              (parse-app (rest stats) new-output)))))
+    (define (f x gs gse gns)
+      (boinc-app
+       (gs 'name)
+       (gs 'user_friendly_name)
+       (gs 'non_cpu_intensive)))
+    (accumulate-element-list stats f))
 
-  (define (parse-app-version stats [output (list)])
-    (if (empty? stats)
-        output
-        (let* ((this-app-version (sublists-only (first stats)))
-               (gs (lambda (x) (get-stat-value this-app-version x)))
-               (gse (lambda (x) (sublists-only (get-node this-app-version x))))
-               (gns (lambda (x) (get-nodes this-app-version x)))
-               (new-output (append output (list (app-version
-                                                 (gs 'subset_sum)
-                                                 (gs 'version_num)
-                                                 (gs 'platform)
-                                                 (gs 'avg_ncpus)
-                                                 (gs 'max_ncpus)
-                                                 (gs 'flops)
-                                                 (gs 'api_version)
-                                                 (parse-app-version-fileref (gns 'file_ref)))))))
-          (if (empty? (rest stats))
-              new-output
-              (parse-app-version (rest stats) new-output)))))
-          
+  (define (parse-app-version stats)
+    (define (f x gs gse gns)
+      (app-version
+       (gs 'subset_sum)
+       (gs 'version_num)
+       (gs 'platform)
+       (gs 'avg_ncpus)
+       (gs 'max_ncpus)
+       (gs 'flops)
+       (gs 'api_version)
+       (parse-app-version-fileref (gns 'file_ref))))
+    (accumulate-element-list stats f))
 
-  (define (parse-app-version-fileref stats [output (list)])
-    (define (f x gs)
+  (define (parse-app-version-fileref stats)
+    (define (f x gs gse gns)
       (parse-into-two-member-struct
        x
        app-version-fileref
@@ -299,12 +289,20 @@
     (define (make-get-stat-value elements)
       (lambda (x) (get-stat-value elements x)))
 
+    (define (make-get-stat-element elements)
+      (lambda (x) (sublists-only (get-node elements x))))
+
+    (define (make-get-child-nodes elements)
+      (lambda (x) (get-nodes elements x)))
+
     (define (do-it elements [output (list)])
       (if (empty? elements)
           output
           (let* ((this-element (sublists-only (first elements)))
-                 (gs (make-get-stat-value this-element)) 
-                 (new-output (append output (list (construct-func this-element gs)))))
+                 (gs (make-get-stat-value this-element))
+                 (gse (make-get-stat-element this-element))
+                 (gns (make-get-child-nodes this-element))
+                 (new-output (append output (list (construct-func this-element gs gse gns)))))
             (if (empty? (rest elements))
                 new-output
                 (do-it (rest elements) new-output)))))
