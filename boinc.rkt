@@ -19,10 +19,10 @@
                (list)
                (get-node (rest stats) stat-name)))))
 
-(define (get-nodes stats stat-name [nodes (list)])
+(define (get-nodes stats stat-name [nodes (list)])  
   (if (eq? (first (first stats)) stat-name)
       (if (empty? (rest stats))
-          nodes
+          (append nodes (list (first stats)))
           (get-nodes (rest stats) stat-name (append nodes (list (first stats)))))
       (if (empty? (rest stats))
           nodes
@@ -286,21 +286,33 @@
           
 
   (define (parse-app-version-fileref stats [output (list)])
-    (if (empty? stats)
-        output                                        
-        (let* ((this-version (sublists-only (first stats)))
-              (new-output (append output (parse-into-two-member-struct
-                                          this-version
-                                          app-version-fileref
-                                          'file-name
-                                          'main-program))))
-          (if (empty? (rest stats))
-              new-output
-              (parse-app-version-fileref (rest stats) new-output)))))
+    (define (f x gs)
+      (parse-into-two-member-struct
+       x
+       app-version-fileref
+       'file_name
+       'main_program))
+    (accumulate-element-list stats f))
+
+  (define (accumulate-element-list elements construct-func)
+
+    (define (make-get-stat-value elements)
+      (lambda (x) (get-stat-value elements x)))
+
+    (define (do-it elements [output (list)])
+      (if (empty? elements)
+          output
+          (let* ((this-element (sublists-only (first elements)))
+                 (gs (make-get-stat-value this-element)) 
+                 (new-output (append output (list (construct-func this-element gs)))))
+            (if (empty? (rest elements))
+                new-output
+                (do-it (rest elements) new-output)))))
+    (do-it elements))
          
-          
+      
   (define (parse-into-two-member-struct stats struct-type member1 member2)
-    (let ((gs (lambda (x) (get-stat-value stats  x))))
+    (let ((gs (lambda (x) (get-stat-value stats x))))
       (struct-type (gs member1)
                    (gs member2))))
          
