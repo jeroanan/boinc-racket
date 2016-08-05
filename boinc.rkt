@@ -248,6 +248,56 @@
           (if (empty? (rest stats))
               output
               (parse-gui-urls (rest stats) new-ouput)))))
+
+
+  (define (parse-app stats [output (list)])
+    (if (empty? stats)
+        output
+        (let* ((this-app (sublists-only (first stats)))
+               (gs (lambda (x) (get-stat-value this-app x)))
+               (gse (lambda (x) (sublists-only (get-node this-app x))))
+               (new-output (append output (list (boinc-app
+                                                 (gs 'name)
+                                                 (gs 'user_friendly_name)
+                                                 (gs 'non_cpu_intensive))))))
+          (if (empty? (rest stats))
+              new-output
+              (parse-app (rest stats) new-output)))))
+
+  (define (parse-app-version stats [output (list)])
+    (if (empty? stats)
+        output
+        (let* ((this-app-version (sublists-only (first stats)))
+               (gs (lambda (x) (get-stat-value this-app-version x)))
+               (gse (lambda (x) (sublists-only (get-node this-app-version x))))
+               (gns (lambda (x) (get-nodes this-app-version x)))
+               (new-output (append output (list (app-version
+                                                 (gs 'subset_sum)
+                                                 (gs 'version_num)
+                                                 (gs 'platform)
+                                                 (gs 'avg_ncpus)
+                                                 (gs 'max_ncpus)
+                                                 (gs 'flops)
+                                                 (gs 'api_version)
+                                                 (parse-app-version-fileref (gns 'file_ref)))))))
+          (if (empty? (rest stats))
+              new-output
+              (parse-app-version (rest stats) new-output)))))
+          
+
+  (define (parse-app-version-fileref stats [output (list)])
+    (if (empty? stats)
+        output                                        
+        (let* ((this-version (sublists-only (first stats)))
+              (new-output (append output (parse-into-two-member-struct
+                                          this-version
+                                          app-version-fileref
+                                          'file-name
+                                          'main-program))))
+          (if (empty? (rest stats))
+              new-output
+              (parse-app-version-fileref (rest stats) new-output)))))
+         
           
   (define (parse-into-two-member-struct stats struct-type member1 member2)
     (let ((gs (lambda (x) (get-stat-value stats  x))))
@@ -271,7 +321,9 @@
                       (gses 'core_client_release)
                       (gses 'executing_as_daemon)
                       (gses 'platform) 
-                      (parse-global-preferences (gse 'global_preferences)))))
+                      (parse-global-preferences (gse 'global_preferences))
+                      (parse-app (gns 'app))
+                      (parse-app-version (gns 'app_version)))))
 
 (define (get-host-info)
   (let* ((host-info-xml (xexpr-get-document-element (get-host-info-xml)))

@@ -11,7 +11,9 @@
    core-client-release
    executing-as-daemon
    platform
-   global-preferences))
+   global-preferences
+   apps
+   app-versions))
 
 (struct host-info
   (timezone
@@ -189,3 +191,16 @@
 (struct name-value (name value))
 
 (struct gui-url (name description url))
+
+(struct boinc-app (name user-friendly-name non-cpu-intensive))
+
+(struct app-version (subset-sum
+                     version-num
+                     platform
+                     avg-ncpus
+                     max-ncpus
+                     flops
+                     api-version
+                     file-ref))
+
+(struct app-version-fileref (file-name main-program))
