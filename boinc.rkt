@@ -2,8 +2,8 @@
 
 (require racket/include)
 (include "boinc-xml.rkt")
-(include "boinc-structs.rkt")
 (include "xexpr-macros.rkt")
+(require "boinc-structs.rkt")
 
 (define (sublists-only element)
   (if (and (list? element) (not (empty? element)))
@@ -37,6 +37,30 @@
     (if (list? stat-entry)
         (if (< (length stat-entry) 3) "" (third stat-entry))
         "")))
+
+(define (accumulate-element-list elements construct-func)
+
+  (define (make-get-stat-value elements)
+    (lambda (x) (get-stat-value elements x)))
+  
+  (define (make-get-stat-element elements)
+    (lambda (x) (sublists-only (get-node elements x))))
+  
+  (define (make-get-child-nodes elements)
+    (lambda (x) (get-nodes elements x)))
+  
+  (define (do-it elements [output (list)])
+    (if (empty? elements)
+        output
+        (let* ((this-element (sublists-only (first elements)))
+               (gs (make-get-stat-value this-element))
+               (gse (make-get-stat-element this-element))
+               (gns (make-get-child-nodes this-element))
+               (new-output (append output (list (construct-func this-element gs gse gns)))))
+          (if (empty? (rest elements))
+              new-output
+              (do-it (rest elements) new-output)))))
+  (do-it elements))
 
 (define (parse-host-info stats)
   (let ((gs (lambda (x) (get-stat-value stats x))))
@@ -129,11 +153,8 @@
                           (gs 'network_wifi_only))))
 
   (define (parse-results stats [output (list)])
-    (let*
-        ((this-result (sublists-only (first stats)))
-         (gs (lambda (x) (get-stat-value this-result x)))
-         (gse (lambda (x) (sublists-only (get-node this-result x))))
-         (r (result (gs 'name)
+    (define (f x gs gse gns)
+      (result (gs 'name)
                  (gs 'wu-name)
                  (gs 'version_num)
                  (gs 'plan_class)
@@ -146,10 +167,7 @@
                  (gs 'received_time)
                  (gs 'estimated_cpu_time_remaining)
                  (parse-active-task (gse 'active_task))))
-         (new-output (append output (list r))))
-      (if (empty? (rest stats))
-          new-output
-          (parse-results (rest stats) new-output))))
+    (accumulate-element-list stats f))
 
   (define (parse-active-task stats)
     (let* ((gs (lambda (x) (get-stat-value stats  x))))
@@ -169,12 +187,9 @@
                    (gs 'bytes_sent)
                    (gs 'bytes_received))))
 
-  (define (parse-workunits stats [output (list)])
-    (let*
-        ((this-workunit (sublists-only (first stats)))
-         (gs (lambda (x) (get-stat-value this-workunit x)))
-         (gse (lambda (x) (sublists-only (get-node this-workunit x))))
-         (wu (workunit (gs 'name)
+  (define (parse-workunits stats)
+    (define (f x gs gse gns)
+      (workunit (gs 'name)
                    (gs 'app_name)
                    (gs 'version_num)
                    (gs 'rsc_fpops_est)
@@ -182,18 +197,11 @@
                    (gs 'rsc_memory_bound)
                    (gs 'rsc_disk_bound)
                    (parse-into-two-member-struct (gse 'file_ref) work-unit-file-ref 'file_name 'open_name)))
-         (new-output (append output (list wu))))
-    (if (empty? (rest stats))
-        new-output
-        (parse-workunits (rest stats) new-output))))
+    (accumulate-element-list stats f))
 
   (define (parse-projects stats [output (list)])
-    (let*
-        ((this-project (sublists-only (first stats)))
-         (gs (lambda (x) (get-stat-value this-project x)))
-         (gse (lambda (x) (sublists-only (get-node this-project x))))
-         (gns (lambda (x) (get-nodes this-project x)))
-         (p (project (gs 'master_url)
+    (define (f x gs gse gns)
+      (project (gs 'master_url)
                      (gs 'project_name)
                      (gs 'symstore)
                      (gs 'user_name)
@@ -236,10 +244,7 @@
                      (gs 'last_rpc_time)
                      (gs 'project_files_downloaded_time)
                      (gs 'project_dir)))
-         (new-output (append output (list p))))
-      (if (empty? (rest stats))
-                  new-output
-                  (parse-projects (rest stats) new-output))))
+    (accumulate-element-list stats f))
 
   (define (parse-gui-urls stats [output (list)])
     (if (empty? stats)
@@ -283,31 +288,6 @@
        'file_name
        'main_program))
     (accumulate-element-list stats f))
-
-  (define (accumulate-element-list elements construct-func)
-
-    (define (make-get-stat-value elements)
-      (lambda (x) (get-stat-value elements x)))
-
-    (define (make-get-stat-element elements)
-      (lambda (x) (sublists-only (get-node elements x))))
-
-    (define (make-get-child-nodes elements)
-      (lambda (x) (get-nodes elements x)))
-
-    (define (do-it elements [output (list)])
-      (if (empty? elements)
-          output
-          (let* ((this-element (sublists-only (first elements)))
-                 (gs (make-get-stat-value this-element))
-                 (gse (make-get-stat-element this-element))
-                 (gns (make-get-child-nodes this-element))
-                 (new-output (append output (list (construct-func this-element gs gse gns)))))
-            (if (empty? (rest elements))
-                new-output
-                (do-it (rest elements) new-output)))))
-    (do-it elements))
-         
       
   (define (parse-into-two-member-struct stats struct-type member1 member2)
     (let ((gs (lambda (x) (get-stat-value stats x))))
@@ -341,5 +321,15 @@
     (parse-host-info host-info-node)))
 
 (define (get-disk-usage)
-  (let* ((disk-usage-xml (xexpr-get-document-element (get-disk-usage-xml))))
-    disk-usage-xml))
+  (let* ((disk-usage-xml (xexpr-get-document-element (get-disk-usage-xml)))
+         (disk-usage-node (sublists-only (get-node (cddr disk-usage-xml) 'disk_usage_summary)))
+         (gs (lambda (x) (get-stat-value disk-usage-node x)))
+         (gns (lambda (x) (get-nodes disk-usage-node x)))
+         (f (lambda (x gs gse gns)
+            (disk-usage-project (gs 'master_url)
+                                (gs 'disk_usage)))))
+    (disk-usage (gs 'd_total)
+                (gs 'd_free)
+                (gs 'd_boinc)
+                (gs 'd_allowed)
+                (accumulate-element-list (gns 'project) f))))

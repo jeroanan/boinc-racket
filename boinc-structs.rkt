@@ -1,3 +1,23 @@
+#lang racket
+
+(provide (struct-out get-state-result))
+(provide (struct-out host-info))
+(provide (struct-out net-stats))
+(provide (struct-out time-stats))
+(provide (struct-out global-preferences))
+(provide (struct-out workunit))
+(provide (struct-out work-unit-file-ref))
+(provide (struct-out result))
+(provide (struct-out active-task))
+(provide (struct-out project))
+(provide (struct-out name-value))
+(provide (struct-out gui-url))
+(provide (struct-out boinc-app))
+(provide (struct-out app-version))
+(provide (struct-out app-version-fileref))
+(provide (struct-out disk-usage))
+(provide (struct-out disk-usage-project))
+
 (struct get-state-result
   (host-info
    net-stats
@@ -204,3 +224,30 @@
                      file-ref))
 
 (struct app-version-fileref (file-name main-program))
+
+(struct disk-usage (disk-total
+                    disk-free
+                    disk-boinc
+                    disk-allowed
+                    projects))
+
+(struct disk-usage-project (master-url disk-usage))
+
+(struct cc-status
+  (network-status
+   ams-password-error
+   task-suspend-reason
+   task-mode
+   task-mode-perm
+   task-mode-delay
+   gpu-suspend-reason
+   gpu-mode
+   gpu-mode-perm
+   gpu-mode-delay
+   network-suspend-reason
+   network-mode
+   network-mode-perm
+   network-mode-delay
+   disallow-attach
+   simple-gui-only
+   max-event-log-lines))

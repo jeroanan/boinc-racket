@@ -4,7 +4,7 @@
   ;; makes an exchange_versions RPC call
   (rpc-call "<exchange_versions/>"))
 
-(define (cc-status)
+(define (get-cc-status-xml)
   ;; makes a cc-status RPC call
   (rpc-call "<get_cc_status/>"))
 
