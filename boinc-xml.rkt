@@ -1,6 +1,28 @@
-(require racket/unix-socket xml)
+#lang racket
 
-(define (exchange-versions)
+(require racket/unix-socket)
+
+(provide exchange-versions-xml)
+(provide get-cc-status-xml)
+(provide get-cc-config-xml)
+(provide get-host-info-xml)
+(provide get-newer-version-xml)
+(provide get-project-status-xml)
+(provide get-results-xml)
+(provide get-disk-usage-xml)
+(provide get-daily-transfer-history-xml)
+(provide get-messages-xml)
+(provide get-message-count-xml)
+(provide get-notices-xml)
+(provide get-notices-public-xml)
+(provide get-global-prefs-file-xml)
+(provide get-project-init-status-xml)
+(provide get-screensaver-tasks-xml)
+(provide get-simple-gui-info-xml)
+(provide get-state-xml)
+(provide get-statistics-xml)
+
+(define (exchange-versions-xml)
   ;; makes an exchange_versions RPC call
   (rpc-call "<exchange_versions/>"))
 
@@ -8,7 +30,7 @@
   ;; makes a cc-status RPC call
   (rpc-call "<get_cc_status/>"))
 
-(define (get-cc-config)
+(define (get-cc-config-xml)
   ;; Gets client configuration. Requires authorization.
   (rpc-call "<get_cc_config />"))
 
@@ -16,7 +38,7 @@
   ;; Gets host info
   (rpc-call "<get_host_info />"))
 
-(define (get-newer-version)
+(define (get-newer-version-xml)
   ;; Checks whether a newer version is available
   (rpc-call "<get_newer_version />"))
   
@@ -76,35 +98,35 @@
   ;; Get disk usage
   (rpc-call "<get_disk_usage />"))
 
-(define (get-daily-transfer-history)
+(define (get-daily-transfer-history-xml)
   ;; Get daily-transfer-history
   (rpc-call "<get_daily_xfer_history />"))
 
-(define (get-messages)
+(define (get-messages-xml)
   ;; Get messages
   (rpc-call "<get_messages />"))
 
-(define (get-message-count)
+(define (get-message-count-xml)
   ;; Get message count
   (rpc-call "<get_message_count />"))
 
-(define (get-notices)
+(define (get-notices-xml)
   ;; Get notices. Requires authorization.
   (rpc-call "<get_notices />"))
 
-(define (get-notices-public)
+(define (get-notices-public-xml)
   ;; Get public notices. Does not require authorization.
   (rpc-call "<get_notices_public />"))
 
-(define (get-account-manager-info)
+(define (get-account-manager-info-xml)
   ;; Get account manager info. Requires authorization.
   (rpc-call "<acct_mgr_info />"))
 
-(define (get-global-prefs-file)
+(define (get-global-prefs-file-xml)
   ;; Get global preferences file xml. Requires authorization.
   (rpc-call "<get_global_prefs_file />"))
 
-(define (get-project-init-status)
+(define (get-project-init-status-xml)
   ;; Get project init status xml. Requires authorization.
   (rpc-call "<get_project_init_status />"))
 
@@ -136,11 +158,11 @@
   ;; Poll the progress of project account lookup. Requires authorization.
   (rpc-call "<lookup_account_poll />"))
 
-(define (get-screensaver-tasks)
+(define (get-screensaver-tasks-xml)
   ;; Get screensaver tasks
   (rpc-call "<get_screensaver_tasks />"))
 
-(define (get-simple-gui-info)
+(define (get-simple-gui-info-xml)
   ;; Get  simple gui info
   (rpc-call "<get_simple_gui_info />"))
 
@@ -148,7 +170,7 @@
   ;; Get state xml
   (rpc-call "<get_state/>"))
 
-(define (get-statistics)
+(define (get-statistics-xml)
   ;; Get statistics
   (rpc-call "<get_statistics />"))
 
@@ -221,6 +243,3 @@
     (close-input-port cin)
     (close-output-port cout)
     xml-in))
-
-
-    

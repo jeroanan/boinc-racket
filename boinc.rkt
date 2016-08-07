@@ -1,9 +1,11 @@
 #lang racket
 
-(require racket/include)
-(include "boinc-xml.rkt")
-(include "xexpr-macros.rkt")
+(require racket/include xml)
+(require "boinc-xml.rkt")
 (require "boinc-structs.rkt")
+
+(define (xexpr-get-document-element xml-string)
+  (xml->xexpr (document-element (read-xml (open-input-string xml-string)))))
 
 (define (sublists-only element)
   (if (and (list? element) (not (empty? element)))
