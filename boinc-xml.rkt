@@ -24,7 +24,7 @@
   ;; Gets project status
   (rpc-call "<get_project_status />"))
 
-(define (get-results [active-only #f])  
+(define (get-results-xml [active-only #f])  
   ;; Get results. If active-only then all results, otherwise active ones only.
   (rpc-call
    (string-append "<get_results><active_only>" (if active-only "true" "false" ) "</active_only></get_results>")))
