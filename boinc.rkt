@@ -333,3 +333,28 @@
                 (gs 'd_boinc)
                 (gs 'd_allowed)
                 (accumulate-element-list (gns 'project) f))))
+
+(define (get-cc-status)
+  (let* ((cc-status-xml (xexpr-get-document-element (get-cc-status-xml)))
+         (cc-status-node (sublists-only (get-node (cddr cc-status-xml) 'cc_status)))
+         (gs (lambda (x) (get-stat-value cc-status-node x))))
+    (cc-status
+     (gs 'network_status)
+     (gs 'ams_password_error)
+     (gs 'task_suspend_reason)
+     (gs 'task_mode)
+     (gs 'task_mode_perm)
+     (gs 'task_mode_delay)
+     (gs 'gpu_suspend_reason)
+     (gs 'gpu_mode)
+     (gs 'gpu_mode_perm)
+     (gs 'gpu_mode_delay)
+     (gs 'network_suspend_reason)
+     (gs 'network_mode)
+     (gs 'network_mode_perm)
+     (gs 'network_mode_delay)
+     (gs 'disallow_attach)
+     (gs 'simple_gui_only)
+     (gs 'max_event_log_lines))))
+
+    

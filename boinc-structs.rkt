@@ -17,6 +17,7 @@
 (provide (struct-out app-version-fileref))
 (provide (struct-out disk-usage))
 (provide (struct-out disk-usage-project))
+(provide (struct-out cc-status))
 
 (struct get-state-result
   (host-info
