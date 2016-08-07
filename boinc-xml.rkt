@@ -20,7 +20,7 @@
   ;; Checks whether a newer version is available
   (rpc-call "<get_newer_version />"))
   
-(define (get-project-status)
+(define (get-project-status-xml)
   ;; Gets project status
   (rpc-call "<get_project_status />"))
 
