@@ -38,11 +38,16 @@
         (if (< (length stat-entry) 3) "" (third stat-entry))
         "")))
 
+(define (get-main-node f node-id)
+  (let* ((root-xml (xexpr-get-document-element (f)))
+         (main-node (sublists-only (get-node (cddr root-xml) node-id))))
+    main-node))
+
 (define (accumulate-element-list elements construct-func)
 
   (define (make-get-stat-value elements)
     (lambda (x) (get-stat-value elements x)))
-  
+
   (define (make-get-stat-element elements)
     (lambda (x) (sublists-only (get-node elements x))))
   
@@ -251,10 +256,6 @@
                           (gs 'override_file_present)
                           (gs 'network_wifi_only))))
 
-  
-
-  
-
   (define (parse-workunits stats)
     (define (f x gs gse gns)
       (workunit (gs 'name)
@@ -319,13 +320,10 @@
                       (parse-app-version (gns 'app_version)))))
 
 (define (get-host-info)
-  (let* ((host-info-xml (xexpr-get-document-element (get-host-info-xml)))
-         (host-info-node (sublists-only (cddr (get-node (cddr host-info-xml) 'host_info)))))
-    (parse-host-info host-info-node)))
+    (parse-host-info (get-main-node get-host-info-xml 'host_info)))
 
 (define (get-disk-usage)
-  (let* ((disk-usage-xml (xexpr-get-document-element (get-disk-usage-xml)))
-         (disk-usage-node (sublists-only (get-node (cddr disk-usage-xml) 'disk_usage_summary)))
+  (let* ((disk-usage-node (get-main-node get-disk-usage-xml 'disk_usage_summary))
          (gs (lambda (x) (get-stat-value disk-usage-node x)))
          (gns (lambda (x) (get-nodes disk-usage-node x)))
          (f (lambda (x gs gse gns)
@@ -338,8 +336,7 @@
                 (accumulate-element-list (gns 'project) f))))
 
 (define (get-cc-status)
-  (let* ((cc-status-xml (xexpr-get-document-element (get-cc-status-xml)))
-         (cc-status-node (sublists-only (get-node (cddr cc-status-xml) 'cc_status)))
+  (let* ((cc-status-node (get-main-node get-cc-status-xml 'cc_status))
          (gs (lambda (x) (get-stat-value cc-status-node x))))
     (cc-status
      (gs 'network_status)
@@ -361,11 +358,7 @@
      (gs 'max_event_log_lines))))
 
 (define (get-project-status)
-  (let* ((projects-xml (xexpr-get-document-element (get-project-status-xml)))
-         (projects-node (sublists-only (get-node (cddr projects-xml) 'projects))))
-    (parse-projects projects-node)))
+    (parse-projects (get-main-node get-project-status-xml 'projects)))
          
 (define (get-results [active-only #f])
-  (let* ((results-xml (xexpr-get-document-element (get-results-xml active-only)))
-         (results-node (sublists-only (get-node (cddr results-xml) 'results))))
-    (parse-results results-node)))
+    (parse-results (get-main-node (lambda () (get-results-xml active-only)) 'results)))
