@@ -1,23 +1,6 @@
 #lang racket
 
-(provide (struct-out get-state-result))
-(provide (struct-out host-info))
-(provide (struct-out net-stats))
-(provide (struct-out time-stats))
-(provide (struct-out global-preferences))
-(provide (struct-out workunit))
-(provide (struct-out work-unit-file-ref))
-(provide (struct-out result))
-(provide (struct-out active-task))
-(provide (struct-out project))
-(provide (struct-out name-value))
-(provide (struct-out gui-url))
-(provide (struct-out boinc-app))
-(provide (struct-out app-version))
-(provide (struct-out app-version-fileref))
-(provide (struct-out disk-usage))
-(provide (struct-out disk-usage-project))
-(provide (struct-out cc-status))
+(provide (all-defined-out))
 
 (struct get-state-result
   (host-info
@@ -252,3 +235,9 @@
    disallow-attach
    simple-gui-only
    max-event-log-lines))
+
+(struct daily-transfer
+  (tx-when
+   up
+   down))
+      

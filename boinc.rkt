@@ -9,13 +9,16 @@
 
 (define (sublists-only element)
   (if (and (list? element) (not (empty? element)))
-      (filter (lambda (x) (list? x)) (cddr element))
+      (filter (lambda (x)
+                (and (list? x)
+                     (not (empty? x))))
+              (cddr element))
       (list)))
 
 (define (get-node stats stat-name)
   (if (empty? stats)
       (list)
-      (if (empty? (first stats))
+      (if (or (empty? (first stats)) (not (list? (first stats))))
           (if (empty? (rest stats))
               (list)
               (get-node (rest stats) stat-name))
@@ -364,3 +367,27 @@
          
 (define (get-results [active-only #f])
     (parse-results (get-main-node (lambda () (get-results-xml active-only)) 'results)))
+
+
+
+(define (get-daily-transfer-history)
+
+  (define (parse-daily-transfer-history nodes [output (list)])
+    (if (empty? nodes)
+        (list)
+        (let* ((this-day (sublists-only (first nodes)))
+               (gs (lambda (x) (get-stat-value this-day x)))               
+               (dt (daily-transfer (gs 'when)
+                                   (gs 'up)
+                                   (gs 'down)))
+               (new-output (append output (list dt))))
+          
+          (if (empty? (rest nodes))
+              new-output
+              (parse-daily-transfer-history (rest nodes) new-output)))))
+          
+  (let* ((root-xml (xexpr-get-document-element (get-daily-transfer-history-xml)))
+         (main-node (sublists-only (get-node (cddr root-xml) 'daily_xfers)))
+         (gns (lambda (x) (get-nodes main-node x))))
+    (parse-daily-transfer-history (gns 'dx))))
+
