@@ -236,8 +236,5 @@
    simple-gui-only
    max-event-log-lines))
 
-(struct daily-transfer
-  (tx-when
-   up
-   down))
+(struct daily-transfer (tx-when up down))
       
