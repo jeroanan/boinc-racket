@@ -33,3 +33,24 @@
          (gns (lambda (x) (get-nodes main-node x))))
     (parse-daily-transfer-history (gns 'dx))))
 
+(define (get-messages)
+  (let ((nodes (get-main-node get-messages-xml 'msgs)))
+    (parse-messages nodes)))
+
+(define (get-message-count)
+  (let* ((root-xml (xexpr-get-document-element (get-message-count-xml)))
+         (main-node (get-node root-xml 'seqno)))
+    (third main-node)))
+
+(define (get-notices-public)
+  ;; To be done -- currently I have empty notices
+  (get-notices-public-xml))
+
+(define (get-screensaver-tasks)
+  (let* ((root-xml (xexpr-get-document-element (get-screensaver-tasks-xml)))
+         (main-node (sublists-only (get-node root-xml 'handle_get_screensaver_tasks))))
+  (parse-screensaver-tasks main-node)))
+
+(define (get-simple-gui-info)
+  (let ((main-node (get-main-node get-simple-gui-info-xml 'simple_gui_info)))
+    (parse-simple-gui-info main-node)))

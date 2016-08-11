@@ -128,7 +128,7 @@
    report-deadline
    received-time
    estimated-cpu-time-remaining
-   active-task))
+   active-tasks))
 
 (struct active-task
   (active-task-state
@@ -238,3 +238,8 @@
 
 (struct daily-transfer (tx-when up down))
       
+(struct message (project pri seqno body msg-time))
+
+(struct screensaver-task (suspend-reason results))
+                          
+(struct simple-gui-info (projects results))
