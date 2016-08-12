@@ -243,3 +243,11 @@
 (struct screensaver-task (suspend-reason results))
                           
 (struct simple-gui-info (projects results))
+
+(struct project-statistics (master-url daily-statistics))
+
+(struct daily-statistics (day
+                          user-total-credit
+                          user-expavg-credit
+                          host-total-credit
+                          host-expavg-credit))

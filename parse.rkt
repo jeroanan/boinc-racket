@@ -19,6 +19,7 @@
 (provide parse-messages)
 (provide parse-screensaver-tasks)
 (provide parse-simple-gui-info)
+(provide parse-statistics)
 
 (define (parse-host-info stats)
   (let ((gs (lambda (x) (get-stat-value stats x))))
@@ -340,6 +341,30 @@
   (let ((gns (lambda (x) (get-nodes nodes x))))
     (simple-gui-info (parse-projects (gns 'project))
                      (parse-results (gns 'result)))))
+
+;; (define (parse-daily-statistics nodes)
+;;   (let ((gns (lambda (x) (get-nodes nodes x)))
+;;         (f (lambda (x gs gse gns)
+;;              (daily-statistics (gs 'day)
+;;                                (gs 'user_total_credit)
+;;                                (gs 'user_expavg_credit)
+;;                                (gs 'host_total_credit)
+;;                                (gs 'host_expavg_credit)))))
+;;     (accumulate-element-list (gns '
+        
+(define (parse-statistics nodes)
+  (let ((gns (lambda (x) (get-nodes nodes x)))
+        (f (lambda (x gs gse gns)
+             (project-statistics (gs 'master_url)             
+             (accumulate-element-list (gns 'daily_statistics) parse-daily-statistics)))))
+  (accumulate-element-list nodes f)))
+                                 
+(define (parse-daily-statistics nodes gs gse gns)
+  (daily-statistics (gs 'day)
+                    (gs 'user_total_credit)
+                    (gs 'user_expavg_credit)
+                    (gs 'host_total_credit)
+                    (gs 'host_expavg_credit)))
 
 (define (parse-into-two-member-struct nodes struct-type member1 member2)
   (let ((gs (lambda (x) (get-stat-value nodes x))))

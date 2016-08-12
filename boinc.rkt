@@ -54,3 +54,7 @@
 (define (get-simple-gui-info)
   (let ((main-node (get-main-node get-simple-gui-info-xml 'simple_gui_info)))
     (parse-simple-gui-info main-node)))
+
+(define (get-statistics)
+  (let ((main-node (get-main-node get-statistics-xml 'statistics)))
+    (parse-statistics main-node)))
