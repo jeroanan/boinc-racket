@@ -21,6 +21,8 @@
 (provide get-simple-gui-info-xml)
 (provide get-state-xml)
 (provide get-statistics-xml)
+(provide auth1-xml
+         auth2-xml)
 
 (define (exchange-versions-xml)
   ;; makes an exchange_versions RPC call
@@ -223,9 +225,24 @@
   ;; Resume work on a project
   (project-url-operation "project_resume" project-url))
 
-(define (rpc-call xml)
-  ;; Perform an RPC call with the given xml. The given xml should not be wrapped in gui_rpc_request elements.
+(define (auth1-xml sock-in sock-out)
+  (rpc-call "<auth1/>" sock-in sock-out))
 
+(define (auth2-xml nonce-hash sock-in sock-out)
+  (let* ((xml-str (string-append "<auth2><nonce_hash>" nonce-hash "</nonce_hash></auth2>")))
+    (rpc-call xml-str sock-in sock-out)))    
+
+(define (rpc-call xml [sock-in null] [sock-out null])
+
+  (define (close-sockets)
+    (let ((do-close (lambda ()
+                      (close-input-port cin)
+                      (close-output-port cout))))
+      (if (null? sock-in)
+          (do-close)
+          null)))
+                      
+  ;; Perform an RPC call with the given xml. The given xml should not be wrapped in gui_rpc_request elements.
   (define (get-gui-rpc-request-xml inner-xml)
     ;; Construct gui_rpc_request xml. It ends with a new line and character 0x03.
     (string-append "<gui_rpc_request>" inner-xml "</gui_rpc_request>\n\003"))
@@ -236,10 +253,12 @@
       (if (string-suffix? line-in "</boinc_gui_rpc_reply>")
           (string-append buffer line-in) (read-in cin (string-append buffer line-in)))))
 
-  (define-values (cin cout) (tcp-connect "localhost" 31416))
+  (define-values (cin cout) (if (null? sock-in)
+                                (tcp-connect "localhost" 31416)
+                                (values sock-in sock-out)))
+    
   (display (get-gui-rpc-request-xml xml) cout)
   (flush-output cout)
-  (let ((xml-in (read-in cin)))
-    (close-input-port cin)
-    (close-output-port cout)
+  (let ((xml-in (read-in cin)))    
+    (close-sockets)
     xml-in))

@@ -1,5 +1,6 @@
 #lang racket
 
+(require file/md5)
 (require "boinc-xml.rkt")
 (require "boinc-structs.rkt")
 (require "xexpr-utils.rkt")
@@ -58,3 +59,20 @@
 (define (get-statistics)
   (let ((main-node (get-main-node get-statistics-xml 'statistics)))
     (parse-statistics main-node)))
+
+(define (authorize)
+
+  (define-values (cin cout) (tcp-connect "localhost" 31416))
+
+  (define (get-nonce)
+    (let* ((root-xml (xexpr-get-document-element (auth1-xml cin cout)))
+           (main-node (get-node root-xml 'nonce))
+           (nonce (third main-node)))
+      nonce))
+  
+  (define (get-password)
+    (file->string "/tmp/gui_rpc_auth.cfg"))
+
+  (let* ((string-to-encode (string-append (get-nonce) (get-password)))
+         (nonce-hash (bytes->string/utf-8 (md5 string-to-encode))))         
+    (auth2-xml nonce-hash cin cout)))
