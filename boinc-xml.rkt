@@ -1,7 +1,7 @@
 #lang racket
 
 (require racket/unix-socket)
-
+(require "socket-util.rkt")
 (provide exchange-versions-xml)
 (provide get-cc-status-xml)
 (provide get-cc-config-xml)
@@ -233,14 +233,6 @@
     (rpc-call xml-str sock-in sock-out)))    
 
 (define (rpc-call xml [sock-in null] [sock-out null])
-
-  (define (close-sockets)
-    (let ((do-close (lambda ()
-                      (close-input-port cin)
-                      (close-output-port cout))))
-      (if (null? sock-in)
-          (do-close)
-          null)))
                       
   ;; Perform an RPC call with the given xml. The given xml should not be wrapped in gui_rpc_request elements.
   (define (get-gui-rpc-request-xml inner-xml)
@@ -253,12 +245,10 @@
       (if (string-suffix? line-in "</boinc_gui_rpc_reply>")
           (string-append buffer line-in) (read-in cin (string-append buffer line-in)))))
 
-  (define-values (cin cout) (if (null? sock-in)
-                                (tcp-connect "localhost" 31416)
-                                (values sock-in sock-out)))
+  (define-values (cin cout) (maybe-get-socket sock-in sock-out))
     
   (display (get-gui-rpc-request-xml xml) cout)
   (flush-output cout)
   (let ((xml-in (read-in cin)))    
-    (close-sockets)
+   (maybe-close-socket sock-in cin cout)
     xml-in))

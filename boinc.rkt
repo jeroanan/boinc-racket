@@ -5,6 +5,7 @@
 (require "boinc-structs.rkt")
 (require "xexpr-utils.rkt")
 (require "parse.rkt")
+(require "socket-util.rkt")
 
 (define (get-state)           
   (let* ((state-xml (xexpr-get-document-element (get-state-xml)))
@@ -60,9 +61,12 @@
   (let ((main-node (get-main-node get-statistics-xml 'statistics)))
     (parse-statistics main-node)))
 
-(define (authorize)
+(define (get-socket)
+  (tcp-connect "localhost" 31416))
 
-  (define-values (cin cout) (tcp-connect "localhost" 31416))
+(define (authorize [sock-in null] [sock-out null])
+
+  (define-values (cin cout) (maybe-get-socket sock-in sock-out))
 
   (define (get-nonce)
     (let* ((root-xml (xexpr-get-document-element (auth1-xml cin cout)))
