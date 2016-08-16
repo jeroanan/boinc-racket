@@ -61,6 +61,29 @@
   (let ((main-node (get-main-node get-statistics-xml 'statistics)))
     (parse-statistics main-node)))
 
+(define (get-cc-config)
+  (simple-authorized-action get-cc-config-xml))
+
+(define (get-notices)
+  (simple-authorized-action get-notices-xml))
+
+(define (get-account-manager-info)
+  (simple-authorized-action get-account-manager-info-xml))
+
+(define (get-global-prefs-file)
+  (simple-authorized-action get-global-prefs-file-xml))
+
+(define (get-project-init-status)
+  ;; is some other parameter needed for this?
+  (simple-authorized-action get-project-init-status-xml))
+
+(define (simple-authorized-action action)
+  (define-values (cin cout) (maybe-get-socket null null))
+  (authorize cin cout)
+  (let ((result (action cin cout)))
+    (maybe-close-socket null cin cout)
+    result))
+
 (define (get-socket)
   (tcp-connect "localhost" 31416))
 

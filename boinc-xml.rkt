@@ -21,6 +21,7 @@
 (provide get-simple-gui-info-xml)
 (provide get-state-xml)
 (provide get-statistics-xml)
+(provide get-account-manager-info-xml)
 (provide auth1-xml
          auth2-xml)
 
@@ -32,9 +33,11 @@
   ;; makes a cc-status RPC call
   (rpc-call "<get_cc_status/>"))
 
-(define (get-cc-config-xml)
+(define (get-cc-config-xml [sock-in null] [sock-out null])
   ;; Gets client configuration. Requires authorization.
-  (rpc-call "<get_cc_config />"))
+  (rpc-with-socket "<get_cc_config />" sock-in sock-out))
+
+
 
 (define (get-host-info-xml)
   ;; Gets host info
@@ -112,25 +115,25 @@
   ;; Get message count
   (rpc-call "<get_message_count />"))
 
-(define (get-notices-xml)
+(define (get-notices-xml [sock-in null] [sock-out null])
   ;; Get notices. Requires authorization.
-  (rpc-call "<get_notices />"))
+  (rpc-with-socket "<get_notices />" sock-in sock-out))
 
 (define (get-notices-public-xml)
   ;; Get public notices. Does not require authorization.
   (rpc-call "<get_notices_public />"))
 
-(define (get-account-manager-info-xml)
+(define (get-account-manager-info-xml [sock-in null] [sock-out null])
   ;; Get account manager info. Requires authorization.
-  (rpc-call "<acct_mgr_info />"))
+  (rpc-with-socket "<acct_mgr_info />" sock-in sock-out))
 
-(define (get-global-prefs-file-xml)
+(define (get-global-prefs-file-xml [sock-in null] [sock-out null])  
   ;; Get global preferences file xml. Requires authorization.
-  (rpc-call "<get_global_prefs_file />"))
+  (rpc-with-socket "<get_global_prefs_file />" sock-in sock-out))
 
-(define (get-project-init-status-xml)
+(define (get-project-init-status-xml [sock-in null] [sock-out null])
   ;; Get project init status xml. Requires authorization.
-  (rpc-call "<get_project_init_status />"))
+  (rpc-with-socket "<get_project_init_status />" sock-in sock-out))
 
 (define (create-account url email-address password-hash username)
   ;; Create a new project account. Requires authorization.
@@ -231,6 +234,12 @@
 (define (auth2-xml nonce-hash sock-in sock-out)
   (let* ((xml-str (string-append "<auth2><nonce_hash>" nonce-hash "</nonce_hash></auth2>")))
     (rpc-call xml-str sock-in sock-out)))    
+
+(define (rpc-with-socket xml [sock-in null] [sock-out null])
+  (define-values (cin cout) (maybe-get-socket sock-in sock-out))
+  (let ((result (rpc-call xml sock-in sock-out)))
+    (maybe-close-socket sock-in cin cout)
+    result))
 
 (define (rpc-call xml [sock-in null] [sock-out null])
                       
