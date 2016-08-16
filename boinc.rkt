@@ -53,6 +53,10 @@
          (main-node (sublists-only (get-node root-xml 'handle_get_screensaver_tasks))))
   (parse-screensaver-tasks main-node)))
 
+(define (get-all-projects-list)
+  (let ((main-node (get-main-node get-all-projects-list-xml 'projects)))
+    (parse-available-projects main-node)))
+
 (define (get-simple-gui-info)
   (let ((main-node (get-main-node get-simple-gui-info-xml 'simple_gui_info)))
     (parse-simple-gui-info main-node)))
@@ -76,6 +80,9 @@
 (define (get-project-init-status)
   ;; is some other parameter needed for this?
   (simple-authorized-action get-project-init-status-xml))
+
+(define (run-benchmarks)
+  (simple-authorized-action run-benchmarks-xml))
 
 (define (simple-authorized-action action)
   (define-values (cin cout) (maybe-get-socket null null))

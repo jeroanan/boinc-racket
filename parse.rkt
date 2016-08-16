@@ -10,6 +10,7 @@
 (provide parse-time-stats)
 (provide parse-global-preferences)
 (provide parse-workunits)
+(provide parse-available-projects)
 (provide parse-app)
 (provide parse-app-version)
 (provide parse-disk-usage)
@@ -342,23 +343,33 @@
     (simple-gui-info (parse-projects (gns 'project))
                      (parse-results (gns 'result)))))
 
-;; (define (parse-daily-statistics nodes)
-;;   (let ((gns (lambda (x) (get-nodes nodes x)))
-;;         (f (lambda (x gs gse gns)
-;;              (daily-statistics (gs 'day)
-;;                                (gs 'user_total_credit)
-;;                                (gs 'user_expavg_credit)
-;;                                (gs 'host_total_credit)
-;;                                (gs 'host_expavg_credit)))))
-;;     (accumulate-element-list (gns '
-        
 (define (parse-statistics nodes)
   (let ((gns (lambda (x) (get-nodes nodes x)))
         (f (lambda (x gs gse gns)
              (project-statistics (gs 'master_url)             
              (accumulate-element-list (gns 'daily_statistics) parse-daily-statistics)))))
   (accumulate-element-list nodes f)))
-                                 
+
+(define (parse-available-project x gs gse gns)
+  (define (platform-names)
+    (let ((the-platforms (gse 'platforms)))
+      (if (empty? the-platforms)
+          ""
+          (map (lambda (x) (third x)) the-platforms))))
+
+  (available-project  (gs 'name)
+                      (gs 'url)
+                      (gs 'general_area)
+                      (gs 'specific-area)
+                      (gs 'description)
+                      (gs 'home)
+                      (platform-names)
+                      (gs 'image)
+                      (gs 'summary)))
+
+(define (parse-available-projects nodes)
+  (accumulate-element-list nodes parse-available-project))  
+  
 (define (parse-daily-statistics nodes gs gse gns)
   (daily-statistics (gs 'day)
                     (gs 'user_total_credit)

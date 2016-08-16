@@ -3,6 +3,7 @@
 (require racket/unix-socket)
 (require "socket-util.rkt")
 (provide exchange-versions-xml)
+(provide get-all-projects-list-xml)
 (provide get-cc-status-xml)
 (provide get-cc-config-xml)
 (provide get-host-info-xml)
@@ -22,6 +23,7 @@
 (provide get-state-xml)
 (provide get-statistics-xml)
 (provide get-account-manager-info-xml)
+(provide run-benchmarks-xml)
 (provide auth1-xml
          auth2-xml)
 
@@ -36,8 +38,6 @@
 (define (get-cc-config-xml [sock-in null] [sock-out null])
   ;; Gets client configuration. Requires authorization.
   (rpc-with-socket "<get_cc_config />" sock-in sock-out))
-
-
 
 (define (get-host-info-xml)
   ;; Gets host info
@@ -179,6 +179,9 @@
   ;; Get statistics
   (rpc-call "<get_statistics />"))
 
+(define (get-all-projects-list-xml)
+  (rpc-call "<get_all_projects_list />"))
+
 (define (project-attach project-url authenticator)
   ;; Attach to a project
   (rpc-call
@@ -234,6 +237,9 @@
 (define (auth2-xml nonce-hash sock-in sock-out)
   (let* ((xml-str (string-append "<auth2><nonce_hash>" nonce-hash "</nonce_hash></auth2>")))
     (rpc-call xml-str sock-in sock-out)))    
+
+(define (run-benchmarks-xml [sock-in null] [sock-out null])
+  (rpc-with-socket "<run_benchmarks />" sock-in sock-out))
 
 (define (rpc-with-socket xml [sock-in null] [sock-out null])
   (define-values (cin cout) (maybe-get-socket sock-in sock-out))

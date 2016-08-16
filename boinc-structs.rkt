@@ -251,3 +251,13 @@
                           user-expavg-credit
                           host-total-credit
                           host-expavg-credit))
+
+(struct available-project (name
+                           url
+                           general-area
+                           specific-area
+                           description
+                           home
+                           platforms
+                           image
+                           summary))
