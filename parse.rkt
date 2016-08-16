@@ -354,8 +354,8 @@
   (define (platform-names)
     (let ((the-platforms (gse 'platforms)))
       (if (empty? the-platforms)
-          ""
-          (map (lambda (x) (third x)) the-platforms))))
+          (list)
+          (map third the-platforms))))
 
   (available-project  (gs 'name)
                       (gs 'url)
