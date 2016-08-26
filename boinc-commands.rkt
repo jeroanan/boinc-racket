@@ -1,3 +1,20 @@
+;; Copyright (c) 2016 David Wilson (Jeroanan)
+
+;; This file is part of boinc-racket.
+
+;; boinc-racket is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; boinc-racket is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with boinc-racket.  If not, see <http://www.gnu.org/licenses/>.
+
 #lang racket
 
 (require file/md5)
@@ -9,6 +26,20 @@
 (require "socket-util.rkt")
 
 (provide (all-defined-out))
+
+;; By and large the functions in this module all perform the following tasks:
+;; 1. Call their corresponding functions in boinc-xml.rkt to perform the correct
+;;    RPC call.
+;; 2. Examine the returned XML to get the "main" node. This differs from command
+;;    to command but will generally be the node immediately following
+;;    boinc_gui_rpc_reply.
+;; 3. Call the relevant function in parse.rkt to get the XML into a struct
+;;
+;; Some commands require authorization. This is also taken care of in this
+;; module.
+;;
+;; A few RPC calls remain untested. In most of these cases the functions here
+;; simply return the XML without making any attempt to parse into a struct.
 
 (define (get-state)           
   (let* ((state-xml (xexpr-get-document-element (get-state-xml)))
