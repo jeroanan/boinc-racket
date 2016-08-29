@@ -41,6 +41,9 @@
 ;;                       time learning more about Racket/GUI programming. It
 ;;                       currently just displays project and task status, and it
 ;;                       doesn't even do that perfectly yet.
+;;
+;; 1.1    XX Aug 2016   Add README.md
+
 
 #lang racket
 
