@@ -21,6 +21,8 @@
 
 (require "../boinc-commands.rkt")
 (require "../boinc-structs.rkt")
+(require "attach-project-window.rkt")
+(require "widget-tools/button-tools.rkt")
 
 (provide show-add-project-window)
 
@@ -51,21 +53,22 @@
                              [min-height min-height]
                              [label #f]))  
 
-  (define (next-button-callback sender control-event)
-    (define event-type (send control-event get-event-type))
-    (cond
-      [(eq? event-type 'button) (next-button-click)]
-      [else #f]))
-
   (define (next-button-click)
-    (define selected-item (first (send projects-list get-selections)))
-    (define selected-data (send projects-list get-data selected-item))
-    #f) ;; Todo: Display attach project dialog passing in URL
+    (define (get-selected-data)
+      (define selections (send projects-list get-selections))
+      (if (empty? selections)
+          #f
+          (send projects-list get-data (first selections))))
+        
+    (define selected-data (get-selected-data))
+    (if (available-project? selected-data)
+        (show-attach-project-window dialog (available-project-url selected-data))
+        #f))    
 
-  (define next-button (new button%
-                           [parent dialog]
-                           [label "Next"]
-                           [callback next-button-callback]))
+  (define button-maker (get-simple-button-maker dialog))
+  (define next-button (button-maker "&Next" next-button-click))
+  (define cancel-button (button-maker "&Cancel"
+                                      (lambda () (send dialog show #f))))
   
   (define (add-data p-list [counter 0])
     (define (do-add)
