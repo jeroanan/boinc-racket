@@ -43,9 +43,10 @@
 (provide get-account-manager-info-xml)
 (provide run-benchmarks-xml)
 (provide auth1-xml
-         auth2-xml)
-(provide lookup-account-xml
-         lookup-account-poll-xml)
+         auth2-xml
+         lookup-account-xml
+         lookup-account-poll-xml
+         project-attach-xml)
 
 (define (exchange-versions-xml)
   ;; makes an exchange_versions RPC call
@@ -246,20 +247,21 @@
   ;;  Make an RPC call to get a list of all available public BOINC projects.
   (rpc-call "<get_all_projects_list />"))
 
-(define (project-attach project-url authenticator)
+(define (project-attach-xml project-url authenticator [sock-in null] [sock-out null])
   ;; Attach to a project
   ;; Parameters:
   ;;
   ;; project-url: The URL of the project to connect to
   ;; authenticator: When lookup-account is called successfully, an authetnicator
   ;;                string is given. That should be the value of this parameter.
-  (rpc-call
+  (rpc-with-socket
    (string-append "<project_attach>"
                   "<use_config_file>false</use_config_file>"
-                  "<project_url>" project-url "</project-url>"
+                  "<project_url>" project-url "</project_url>"
                   "<authenticator>" authenticator "</authenticator>"
                   "<project_name>" project-url "</project_name>"
-                  "<project_attach>")))
+                  "<project_attach>")
+   sock-in sock-out))
 
 (define (project-url-operation operation-name project-url)
   ;; Perform a generic operation on a project when that project requires only a

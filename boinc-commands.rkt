@@ -176,7 +176,8 @@
                                        "-204")))
     (define (is-authenticator? msg) (string-contains? msg "authenticator"))
     
-    (sleep 2)
+    (sleep 2) ;; This causes the main thread to lock out.
+              ;; So I really need run lookup-account in a separate thread.
     (define poll-result (simple-authorized-action lookup-account-poll-xml
                                                   sock-in sock-out))
 
@@ -189,14 +190,20 @@
       [(is-authenticator? poll-result) (project-authenticator (get-inner-string poll-result
                                                                     "<authenticator>"
                                                                     "</authenticator>"))]
-      [else (error (string-append "Unknown response: " result))]))
-
+      [else (error (string-append "Unknown response: " result))]))    
+  
   (define result (simple-authorized-action do-lookup sock-in sock-out))
   (cond
     [(is-unauthorized? result) (raise 'unauthorized)]
     [(is-success? result) (do-lookup-poll)] 
     [(is-error? result) (error-message (extract-error-message result))]
     [else (error (string-append "Unknown response: " result))]))
+
+(define (project-attach project-url authenticator [sock-in null] [sock-out
+                                                                  null])
+  (define (do-attach [sock-in null] [sock-out null])
+    (project-attach-xml project-url authenticator sock-in sock-out))
+  (simple-authorized-action do-attach sock-in sock-out))    
 
 (define (simple-authorized-action action [sock-in null] [sock-out null])
   (define-values (cin cout) (maybe-get-socket sock-in sock-out))

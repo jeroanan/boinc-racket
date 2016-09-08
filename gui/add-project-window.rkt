@@ -37,7 +37,11 @@
                      [min-width min-width]
                      [min-height min-height]))
 
-  (define available-projects (get-all-projects-list))
+  (define available-projects
+    (sort (get-all-projects-list)
+          (lambda (x y) (string<? (available-project-name x)
+                                  (available-project-name y)))))
+
   (define available-project-names (map (lambda (x) (available-project-name x)) available-projects))
 
   (define projects-list (new list-box%
@@ -89,6 +93,7 @@
   (send projects-list set-column-label 0 "Name")
   (send projects-list set-selection 0)
   
-  (send dialog show #t))
+  (send dialog show #t)
+  (send projects-list focus))
                      
 

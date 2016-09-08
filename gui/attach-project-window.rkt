@@ -74,15 +74,18 @@
       (define lookup-result (lookup-account project-url email-address password))
       (cond
         [(error-message? lookup-result) (show-caution-message
-                                         (error-message-message lookup-result))])
-      (display lookup-result)
-      (display "\n")
+                                         (error-message-message lookup-result))]
+
+        ;; TODO: If it's a project-authenticator the next step is to attach the project.
+        [(project-authenticator? lookup-result) (project-attach project-url
+                                                           (project-authenticator-authenticator
+                                                            lookup-result))])
       #f)
     #f)
 
   (define button-maker (get-simple-button-maker button-container))
   (define cancel-button (button-maker "Cancel" (lambda () (send dialog show #f))))
   (define ok-button (button-maker "OK" ok-button-clicked))
-  
-                                   
+    
   (send dialog show #t))
+
