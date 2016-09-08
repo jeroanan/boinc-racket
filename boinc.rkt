@@ -42,7 +42,21 @@
 ;;                       currently just displays project and task status, and it
 ;;                       doesn't even do that perfectly yet.
 ;;
-;; 1.1    XX Aug 2016   Add README.md
+;; 1.1    XX Sep 2016   Add README.md
+;;
+;;                      Added project list dialog.
+;;                       It lists all publicly-available BOINC projects and
+;;                       allows the user to click through into the attach
+;;                       project dialog.
+;;
+;;                      Added attach project dialog.
+;;
+;;                      Added widget tools to ease the creation of commonly-used
+;;                      GUI widgets. So far this includes:
+;;                       + button-tools
+;;                       + caution-box
+;;                       I (or you) should be able to reuse them in future
+;;                       projects that use a GUI.
 
 
 #lang racket

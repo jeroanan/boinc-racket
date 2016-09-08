@@ -33,8 +33,8 @@
   ;; A function taking the following parameters:
   ;;
   ;; label: The label that the button should have
-  ;; on-click: A function with no methods that will be executed when the button
-  ;;           is clicked.
+  ;; on-click: A function with no arguments that will be executed when the
+  ;; button is clicked.
   (lambda (label on-click)
     (new button%
          [parent parent]

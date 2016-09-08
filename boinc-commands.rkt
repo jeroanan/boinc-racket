@@ -118,12 +118,91 @@
 (define (run-benchmarks)
   (simple-authorized-action run-benchmarks-xml))
 
-(define (simple-authorized-action action)
-  (define-values (cin cout) (maybe-get-socket null null))
+(define (get-string-index string-in search-substring [counter 0])
+  ;; Find search-substring in string-in. Returns the index of the first
+  ;; character of search-subsring's first occurrence in string-in. If
+  ;; search-substring is not found in string-in, return -1.
+  (cond
+    [(string-prefix? string-in search-substring) counter]
+    ;; If it's a single character and it's not our substring it can't be there
+    [(eq? (string-length string-in) 1) -1]       
+    [else (get-string-index (substring string-in 1 (string-length string-in))
+                            search-substring
+                            (+ counter 1))]))
+
+(define (get-inner-string string-in string-begin string-end)
+  ;; Get a string from a larger string that lies between string-in and
+  ;; string-end.
+  ;;
+  ;; This is particularly useful for getting the inner string from an XML tag.
+  (define inner-start-index (+ (get-string-index string-in string-begin)
+                                 (string-length string-begin)))
+  (define inner-end-index (get-string-index string-in string-end))
+
+  (if (or (eq? inner-start-index -1)
+          (eq? inner-end-index -1))
+      ""
+      (substring string-in inner-start-index inner-end-index)))
+
+(define (extract-error-message string-in) (get-inner-string string-in
+                                                            "<error>"
+                                                            "</error>"))
+
+(define (lookup-account project-url email-address password)
+
+  (define-values (sock-in sock-out) (maybe-get-socket null null))
+
+  (define passsword-hash
+    (bytes->string/utf-8 (md5 (string-append password email-address))))
+
+  (define (is-unauthorized? msg) (string-contains? msg "unauthorized"))
+  (define (is-success? msg) (string-contains? msg "success"))
+  (define (is-error? msg) (string-contains? msg "error"))
+
+  (define (do-lookup [sock-in null] [sock-out null])
+    (lookup-account-xml project-url
+                        email-address
+                        passsword-hash
+                        sock-in sock-out))
+
+  (define (do-lookup-poll)
+    (define (is-account-out? msg) (string-contains? msg "account_out"))
+    (define (is-lookup-pending? msg) (and
+                                      (is-account-out? msg)
+                                      (is-error? msg)
+                                      (equal?
+                                       (get-inner-string msg "<error_num>"
+                                                         "</error_num>")
+                                       "-204")))
+    (define (is-authenticator? msg) (string-contains? msg "authenticator"))
+    
+    (sleep 2)
+    (define poll-result (simple-authorized-action lookup-account-poll-xml
+                                                  sock-in sock-out))
+
+    (cond
+      [(is-unauthorized? poll-result) (raise 'unauthorized)]
+      [(is-lookup-pending? poll-result) (do-lookup-poll)]
+      [(is-error? poll-result) (error-message (get-inner-string poll-result
+                                                                "<error_msg>"
+                                                                "</error_msg>"))]
+      [(is-authenticator? poll-result) (project-authenticator (get-inner-string poll-result
+                                                                    "<authenticator>"
+                                                                    "</authenticator>"))]
+      [else (error (string-append "Unknown response: " result))]))
+
+  (define result (simple-authorized-action do-lookup sock-in sock-out))
+  (cond
+    [(is-unauthorized? result) (raise 'unauthorized)]
+    [(is-success? result) (do-lookup-poll)] 
+    [(is-error? result) (error-message (extract-error-message result))]
+    [else (error (string-append "Unknown response: " result))]))
+
+(define (simple-authorized-action action [sock-in null] [sock-out null])
+  (define-values (cin cout) (maybe-get-socket sock-in sock-out))
   (authorize cin cout)
-  (let ((result (action cin cout)))
-    (maybe-close-socket null cin cout)
-    result))
+  (define result (action cin cout))  
+  result)
 
 (define (authorize [sock-in null] [sock-out null])
 

@@ -281,3 +281,10 @@
                            platforms
                            image
                            summary))
+
+(struct success ([success #:auto])
+  #:auto-value #t)
+
+(struct error-message (message))
+
+(struct project-authenticator (authenticator))

@@ -19,6 +19,7 @@
 
 (require racket/unix-socket)
 (require "socket-util.rkt")
+
 (provide exchange-versions-xml)
 (provide get-all-projects-list-xml)
 (provide get-cc-status-xml)
@@ -43,6 +44,8 @@
 (provide run-benchmarks-xml)
 (provide auth1-xml
          auth2-xml)
+(provide lookup-account-xml
+         lookup-account-poll-xml)
 
 (define (exchange-versions-xml)
   ;; makes an exchange_versions RPC call
@@ -169,19 +172,59 @@
   ;; Poll the progress of project account creation. Requires authorization.
   (rpc-call "<create_account_poll />"))
 
-(define (lookup-account project-url email-address password-hash)
+(define (lookup-account-xml project-url
+                            email-address
+                            password-hash
+                            [sock-in null]
+                            [sock-out null])
   ;; Look up an existing project account. Requires authorization.
-  (rpc-call
+  ;; password-hash is an MD5 hash of the account's email address concatenated to
+  ;; its password.
+  (rpc-with-socket
    (string-append "<lookup_account>"
                   "<url>" project-url "</url>"
                   "<email_addr>" email-address "</email_addr>"
                   "<passwd_hash>" password-hash "</passwd_hash>"
                   "<ldap_auth>0</ldap_auth>"
-                  "</lookup_account>")))
+                  "</lookup_account>")
+   sock-in
+   sock-out))
 
-(define (lookup-account-poll)
+(define (lookup-account-poll-xml [sock-in null] [sock-out null])
   ;; Poll the progress of project account lookup. Requires authorization.
-  (rpc-call "<lookup_account_poll />"))
+  ;;
+  ;; This function returns differenlty-shaped XML depending on the status of the
+  ;; account lookup.
+  ;;
+  ;; Firstly, if the connection is not authorized then it gives a plain old
+  ;; unauthorized response:
+  ;;
+  ;; <boinc_gui_rpc_reply><unauthorized /></boinc_gui_rpc_reply>
+  ;;
+  ;; If called while the lookup is still pending then error -204 is returned. In
+  ;; that case then this function should be called again periodically until the
+  ;; lookup has been completed:
+  ;;
+  ;; <account_out><error_num>-204</error_num></account_out>
+  ;;
+  ;; If an actual problem occurs, e.g. an invalid password, then the following
+  ;; message will be returned:
+  ;;
+  ;; <error><error_num>-206</error_num><error_msg>Invalid password</error_msg></error>
+  ;;  
+  ;; There are other error numbers that can be returned, which may not be
+  ;; covered by whatever calls this function, so the reader is encouraged to
+  ;; consult lib/error_numbers.h in the BOINC source code in the event that an
+  ;; unfamiliar one is seen.
+  ;;
+  ;; Finally, when lookup completes successfully the following kind of message
+  ;; is returned:
+  ;;
+  ;; <account_out><authenticator>authenticator-string</authenticator></account_out>
+  ;;
+  ;; Where authenticator-string is a string returned that needs to be supplied
+  ;; when actually attaching to the project.  
+  (rpc-with-socket "<lookup_account_poll />" sock-in sock-out))
 
 (define (get-screensaver-tasks-xml)
   ;; Get screensaver tasks
@@ -324,6 +367,7 @@
     
   (display (get-gui-rpc-request-xml xml) cout)
   (flush-output cout)
-  (let ((xml-in (read-in cin)))    
-   (maybe-close-socket sock-in cin cout)
-    xml-in))
+
+  (define xml-in (string-trim (read-in cin) "\u0003"))
+  (maybe-close-socket sock-in cin cout)
+  xml-in)

@@ -53,6 +53,7 @@
                              [min-height min-height]
                              [label #f]))  
 
+
   (define (next-button-click)
     (define (get-selected-data)
       (define selections (send projects-list get-selections))
@@ -65,7 +66,11 @@
         (show-attach-project-window dialog (available-project-url selected-data))
         #f))    
 
-  (define button-maker (get-simple-button-maker dialog))
+  (define button-container (new horizontal-pane%
+                                [parent dialog]
+                                [alignment (list 'right 'center)]))
+
+  (define button-maker (get-simple-button-maker button-container))
   (define next-button (button-maker "&Next" next-button-click))
   (define cancel-button (button-maker "&Cancel"
                                       (lambda () (send dialog show #f))))
@@ -80,9 +85,10 @@
         (do-add)))
 
   (add-data available-projects)
-        
 
   (send projects-list set-column-label 0 "Name")
+  (send projects-list set-selection 0)
+  
   (send dialog show #t))
                      
 

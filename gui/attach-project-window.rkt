@@ -21,12 +21,14 @@
 
 (require "../boinc-commands.rkt")
 (require "../boinc-structs.rkt")
+(require "widget-tools/button-tools.rkt")
+(require "widget-tools/caution-box.rkt")
 
 (provide show-attach-project-window)
 
 (define (show-attach-project-window parent [project-url ""])
 
-  (define min-width 200)
+  (define min-width 600)
   (define min-height 200)
 
   (define dialog (new dialog%
@@ -34,4 +36,53 @@
                      [parent parent]
                      [min-width min-width]
                      [min-height min-height]))
+
+  (define project-url-textbox (new text-field%
+                                   [label "Project URL"]
+                                   [parent dialog]))
+  (send project-url-textbox set-value project-url)
+  
+  (define email-address-textbox (new text-field%
+                                [label "Email address"]
+                                [parent dialog]))
+
+  (define password-textbox (new text-field%
+                                [label "Password"]
+                                [parent dialog]
+                                [style (list 'single 'password)]))
+
+  (define button-container (new horizontal-pane%
+                                [parent dialog]
+                                [alignment (list 'right 'center)]))
+
+  (define unauthorized-message (make-caution-box dialog
+                                                  "Authorization with BOINC failed. Check your GUI RPC password settings."
+                                                  "Authorization failed"))
+
+  (define (show-caution-message message)
+    (send (make-caution-box dialog message "Error") show #t))
+
+  (define (ok-button-clicked)
+    (define project-url (send project-url-textbox get-value))
+    (define email-address (send email-address-textbox get-value))
+    (define password (send password-textbox get-value))
+    
+    (with-handlers
+      ([(lambda (v) (equal? v 'unauthorized))
+        (lambda (v) (send unauthorized-message show #t))])
+
+      (define lookup-result (lookup-account project-url email-address password))
+      (cond
+        [(error-message? lookup-result) (show-caution-message
+                                         (error-message-message lookup-result))])
+      (display lookup-result)
+      (display "\n")
+      #f)
+    #f)
+
+  (define button-maker (get-simple-button-maker button-container))
+  (define cancel-button (button-maker "Cancel" (lambda () (send dialog show #f))))
+  (define ok-button (button-maker "OK" ok-button-clicked))
+  
+                                   
   (send dialog show #t))
