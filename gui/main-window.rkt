@@ -24,6 +24,7 @@
 (require "../boinc-commands.rkt")
 (require "../boinc-structs.rkt")
 (require "add-project-window.rkt")
+(require "widget-tools/button-tools.rkt")
 
 (define (launch-gui)
   (define tab-height 300)
@@ -82,7 +83,22 @@
       (add-list-column projects-list label 300 contents))
 
     (define projects-panel (new-panel "Attached Projects"))
-    (define projects-list (new-list-box projects-panel project-names))
+    (define hpane (new horizontal-pane%
+                            [parent projects-panel]))
+
+    (define button-panel (new vertical-panel%
+                              [parent hpane]
+                              [alignment (list 'center 'top)]))
+
+    (define button-maker (get-simple-button-maker button-panel))
+
+    (define (do-nothing) #f)
+    (define update-button (button-maker "Update" do-nothing))
+    (define suspend-button (button-maker "Suspend" do-nothing))
+    (define no-new-tasks-button (button-maker "No new tasks" do-nothing))
+    (define detach-project (button-maker "Detach" do-nothing))
+
+    (define projects-list (new-list-box hpane project-names))
     (send projects-list set-column-width 0 300 0 1000000)
     (send projects-list set-column-label 0 "Project")
     
