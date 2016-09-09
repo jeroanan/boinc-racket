@@ -57,6 +57,9 @@
 ;;                       + caution-box
 ;;                       I (or you) should be able to reuse them in future
 ;;                       projects that use a GUI.
+;;
+;;                      Can use attach project dialog to attach to an existing
+;;                      account on a project.
 
 
 #lang racket

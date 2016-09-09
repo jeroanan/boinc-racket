@@ -76,10 +76,15 @@
         [(error-message? lookup-result) (show-caution-message
                                          (error-message-message lookup-result))]
 
-        ;; TODO: If it's a project-authenticator the next step is to attach the project.
         [(project-authenticator? lookup-result) (project-attach project-url
                                                            (project-authenticator-authenticator
                                                             lookup-result))])
+      ;; The problem now (for the GUI) is that when we have attached to the
+      ;; project, then what? We need to be able to call back to the main window
+      ;; so its list of projecs will update. At the moment the new project
+      ;; doesn't show up until the user closes and re-opens it. I will deal with
+      ;; that later though -- I am developing bindings for Racket, not a
+      ;; replacement GUI.
       #f)
     #f)
 
