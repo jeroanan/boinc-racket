@@ -70,4 +70,4 @@
 (require "boinc-xml.rkt") ;; Run RPC calls and return raw XML.
 (require "boinc-commands.rkt") ;; RUN RPC calls and return structs
 (require "boinc-structs.rkt") ;; Access to struct members
-(require "gui/main-window.rkt") ;; The GUI. Run (launch-gui) to start it.
+(require "gui/main-window/main-window.rkt") ;; The GUI. Run (launch-gui) to start it.

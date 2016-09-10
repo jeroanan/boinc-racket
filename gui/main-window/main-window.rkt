@@ -21,10 +21,10 @@
 
 (require racket/gui/base)
 
-(require "../boinc-commands.rkt")
-(require "../boinc-structs.rkt")
-(require "add-project-window.rkt")
-(require "widget-tools/button-tools.rkt")
+(require "../../boinc-commands.rkt")
+(require "../../boinc-structs.rkt")
+(require "../add-project-window.rkt")
+(require "../widget-tools/button-tools.rkt")
 
 (define tab-height 300)
 (define tab-width 1000)
@@ -227,8 +227,7 @@
   (define tools-menu (new-menu "&Tools"))
   (new-menu-item "&Add project or account manager..." tools-menu (lambda (x y) (show-add-project-window frame)))
 
-  (define tools-menu-items (list "&Add project or account manager..."
-                                 "&Options..."
+  (define tools-menu-items (list "&Options..."
                                  "Computing &preferences..."))
   (make-dud-menu tools-menu tools-menu-items)
 
