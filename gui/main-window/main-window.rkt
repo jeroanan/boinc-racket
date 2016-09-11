@@ -25,6 +25,7 @@
 (require "../../boinc-structs.rkt")
 (require "../add-project-window.rkt")
 (require "projects-panel.rkt"
+         "tasks-panel.rkt"
          "../widget-tools/button-tools.rkt"
          "../widget-tools/list-tools.rkt"
          "../widget-tools/tab-tools.rkt")
@@ -55,7 +56,7 @@
                    (case (send tp get-selection)
                      ((0) (change-to-notices-panel))
                      ((1) ((lambda () (change-to-projects-panel tab-panel))))
-                     ((2) (change-to-tasks-panel))
+                     ((2) ((lambda() change-to-tasks-panel tab-panel)))
                      ((3) (change-to-transfers-panel))
                      ((4) (change-to-statistics-panel))
                      ((5) (change-to-disk-panel))))]))
@@ -68,37 +69,6 @@
   ;; Draw the notices panel
   (define notices-panel (new-panel "Notices"))
   (dt 0 (list notices-panel)))
-
-(define (change-to-tasks-panel)
-  
-  (define results (get-results))
-  
-  (define (gtf the-field)
-    (map (lambda (x) (the-field x)) results))
-  
-  (define task-names (gtf result-name))
-  (define project-urls (gtf result-project-url))
-  (define report-deadlines (gtf result-report-deadline))
-  (define task-states (gtf result-state))
-  
-  (define (get-fraction-done)
-    (map (lambda (x) (active-task-fraction-done (result-active-tasks x))) results))
-  
-  (define tasks-panel (new-panel "Tasks"))
-  
-  (define tasks-list (new-list-box tasks-panel tab-width project-urls))
-  (send tasks-list set-column-width 0 300 0 1000000)
-  (send tasks-list set-column-label 0 "Project")
-
-  (define (add-to-list label contents)
-    (add-list-column tasks-list label 300 contents))
-
-  (add-to-list "% Done" (get-fraction-done))
-  (add-to-list "Deadline" report-deadlines)
-  (add-to-list "Status" task-states)    
-  (add-to-list "Name" task-names)
-
-  (dt 2 (list tasks-panel)))
 
 (define (change-to-transfers-panel)
   (define transfers-panel (new-panel "Transfers"))
@@ -148,7 +118,7 @@
 
   (view-menu-item "&Notices" change-to-notices-panel)
   (view-menu-item "&Projects" (lambda () (change-to-projects-panel tab-panel)))
-  (view-menu-item "&Tasks" change-to-tasks-panel)
+  (view-menu-item "&Tasks" (lambda () (change-to-tasks-panel tab-panel)))
   (view-menu-item "Trans&fers" change-to-transfers-panel)
   (view-menu-item "&Statistics" change-to-statistics-panel)
   (view-menu-item "&Disk usage" change-to-disk-panel)
@@ -174,4 +144,4 @@
 
   (send frame show #t)
   (send tab-panel set-selection 1)
-  (change-to-tasks-panel))
+  (change-to-tasks-panel tab-panel))
