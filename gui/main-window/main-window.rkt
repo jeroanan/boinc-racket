@@ -42,7 +42,7 @@
                    (width tab-width)))
 
 
-(define (get-tab-panel)
+(define tab-panel
   ;; Initialise the tab strip that runs along the top of the main window.
   (new tab-panel%
        [parent frame]
@@ -61,29 +61,17 @@
                      ((4) (change-to-statistics-panel))
                      ((5) (change-to-disk-panel))))]))
 
-(define tab-panel (get-tab-panel))
-
 (define dt ((curry draw-tab) tab-panel))
 
-(define (change-to-notices-panel)
-  ;; Draw the notices panel
-  (define notices-panel (new-panel "Notices"))
-  (dt 0 (list notices-panel)))
+(define (change-to-panel index)
+  ;; Draw an empty panel at the given index.
+  (define new-panel (new panel% [parent tab-panel]))
+  (dt index (list new-panel)))
 
-(define (change-to-transfers-panel)
-  (define transfers-panel (new-panel "Transfers"))
-  (dt 3 (list transfers-panel)))
-
-(define (change-to-statistics-panel)
-  (define statistics-panel (new-panel "Statistics"))
-  (dt 4 (list statistics-panel)))
-
-(define (change-to-disk-panel)
-  (define disk-panel (new-panel "Disk"))
-  (dt 5 (list disk-panel)))  
-
-(define (new-panel label)  
-  (new panel% [parent tab-panel]))
+(define (change-to-notices-panel) (change-to-panel 0))
+(define (change-to-transfers-panel) (change-to-panel 3))
+(define (change-to-statistics-panel) (change-to-panel 4))
+(define (change-to-disk-panel) (change-to-panel 5))
 
 (define (launch-gui)
 
