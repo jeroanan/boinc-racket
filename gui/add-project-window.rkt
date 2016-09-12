@@ -22,7 +22,8 @@
 (require "../boinc-commands.rkt")
 (require "../boinc-structs.rkt")
 (require "attach-project-window.rkt")
-(require "widget-tools/button-tools.rkt")
+(require "widget-tools/button-tools.rkt"
+         "widget-tools/list-tools.rkt")
 
 (provide show-add-project-window)
 
@@ -44,28 +45,11 @@
 
   (define available-project-names (map (lambda (x) (available-project-name x)) available-projects))
 
-  (define projects-list (new list-box%
-                             [parent dialog]
-                             [choices available-project-names]
-                             [style (list 'single
-                                          'variable-columns
-                                          'column-headers
-                                          'clickable-headers)]
-                             [stretchable-width #t]
-                             [stretchable-height #t]
-                             [min-width min-width]
-                             [min-height min-height]
-                             [label #f]))  
-
+  (define projects-list (new-list-box dialog min-width available-project-names))
+  (send projects-list min-height min-height)
 
   (define (next-button-click)
-    (define (get-selected-data)
-      (define selections (send projects-list get-selections))
-      (if (empty? selections)
-          #f
-          (send projects-list get-data (first selections))))
-        
-    (define selected-data (get-selected-data))
+    (define selected-data (get-listbox-selected-data projects-list))
     (if (available-project? selected-data)
         (show-attach-project-window dialog (available-project-url selected-data))
         #f))    
@@ -78,17 +62,8 @@
   (define next-button (button-maker "&Next" next-button-click))
   (define cancel-button (button-maker "&Cancel"
                                       (lambda () (send dialog show #f))))
-  
-  (define (add-data p-list [counter 0])
-    (define (do-add)
-      (send projects-list set-data counter (first p-list))
-      (add-data (rest p-list) (+ counter 1)))
 
-    (if (empty? p-list)
-        #f
-        (do-add)))
-
-  (add-data available-projects)
+  (set-listbox-data projects-list available-projects)
 
   (send projects-list set-column-label 0 "Name")
   (send projects-list set-selection 0)

@@ -46,7 +46,8 @@
          auth2-xml
          lookup-account-xml
          lookup-account-poll-xml
-         project-attach-xml)
+         project-attach-xml
+         project-detach-xml)
 
 (define (exchange-versions-xml)
   ;; makes an exchange_versions RPC call
@@ -268,12 +269,16 @@
   ;; project url as an argument
   (rpc-call
    (string-append "<" operation-name ">"
-                  "<project_url>" project-url "</project-url>"
+                  "<project_url>" project-url "</project_url>"
                   "</" operation-name ">")))
 
-(define (project-detach project-url)
+(define (project-detach-xml project-url [sock-in null] [sock-out null])
   ;; Detach from a project
-  (project-url-operation "project_detach" project-url))
+  (rpc-with-socket
+   (string-append "<project_detach>"
+                  "<project_url>" project-url "</project_url>"
+                  "</project_detach>")
+   sock-in sock-out))
 
 (define (project-detach-when-done project-url)
   ;; Detach from a project when all current tasks for it are done

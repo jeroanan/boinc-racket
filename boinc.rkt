@@ -42,7 +42,7 @@
 ;;                       currently just displays project and task status, and it
 ;;                       doesn't even do that perfectly yet.
 ;;
-;; 1.1    XX Sep 2016   Add README.md
+;; 1.1    12 Sep 2016   Add README.md
 ;;
 ;;                      Added project list dialog.
 ;;                       It lists all publicly-available BOINC projects and
@@ -60,6 +60,10 @@
 ;;
 ;;                      Can use attach project dialog to attach to an existing
 ;;                      account on a project.
+;;
+;;                      Some big refactoring of the main window
+;;
+;;                      Can detach from a project
 
 
 #lang racket

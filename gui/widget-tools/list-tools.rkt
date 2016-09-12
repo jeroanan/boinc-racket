@@ -20,7 +20,9 @@
 (require racket/gui/base)
 
 (provide add-list-column
-         new-list-box)
+         new-list-box
+         set-listbox-data
+         get-listbox-selected-data)
 
 (define (set-list-column-items list-ctrl column-no list-items [n 0])
   ;; For the given list control and column number, set the contents.
@@ -48,3 +50,20 @@
        [stretchable-width #t]
        [stretchable-height #t]
        [label #f]))
+
+(define (set-listbox-data list-box data)  
+  (define (add-data data counter)
+    (define (do-add)
+      (send list-box set-data counter (first data))
+      (add-data (rest data) (+ counter 1)))
+
+    (if (empty? data)
+        #f
+        (do-add)))
+  (add-data data 0))
+
+(define (get-listbox-selected-data list-box)
+  (define selections (send list-box get-selections))
+  (if (empty? selections)
+      #f
+      (send list-box get-data (first selections))))

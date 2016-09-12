@@ -148,16 +148,16 @@
                                                             "<error>"
                                                             "</error>"))
 
+(define (is-unauthorized? msg) (string-contains? msg "unauthorized"))
+(define (is-error? msg) (string-contains? msg "error"))
+(define (is-success? msg) (string-contains? msg "success"))
+
 (define (lookup-account project-url email-address password)
 
   (define-values (sock-in sock-out) (maybe-get-socket null null))
 
   (define passsword-hash
     (bytes->string/utf-8 (md5 (string-append password email-address))))
-
-  (define (is-unauthorized? msg) (string-contains? msg "unauthorized"))
-  (define (is-success? msg) (string-contains? msg "success"))
-  (define (is-error? msg) (string-contains? msg "error"))
 
   (define (do-lookup [sock-in null] [sock-out null])
     (lookup-account-xml project-url
@@ -204,6 +204,18 @@
   (define (do-attach [sock-in null] [sock-out null])
     (project-attach-xml project-url authenticator sock-in sock-out))
   (simple-authorized-action do-attach sock-in sock-out))    
+
+(define (project-detach project-url [sock-in null] [sock-out null])
+  (define (do-detach [sock-in null] [sock-out null])
+    (project-detach-xml project-url sock-in sock-out))
+  (define result (simple-authorized-action do-detach sock-in sock-out))
+  (cond
+    [(is-unauthorized? result) (raise 'unauthorized)]
+    [(is-error? result) (error-message (get-inner-string result
+                                                         "<error>"
+                                                         "</error>"))]
+    [(is-success? result) (void)]
+    [else (error (string-append "Unknown response: " result))]))
 
 (define (simple-authorized-action action [sock-in null] [sock-out null])
   (define-values (cin cout) (maybe-get-socket sock-in sock-out))

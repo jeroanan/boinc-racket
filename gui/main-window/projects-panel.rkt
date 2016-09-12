@@ -20,11 +20,13 @@
 (provide change-to-projects-panel)
 
 (require racket/gui/base)
-(require "../../boinc-commands.rkt")
-(require "../../boinc-structs.rkt")
+(require "../../boinc-commands.rkt"
+         "../../boinc-structs.rkt"
+         "../../macros.rkt")
 (require "../widget-tools/list-tools.rkt"
          "../widget-tools/button-tools.rkt"
-         "../widget-tools/tab-tools.rkt")
+         "../widget-tools/tab-tools.rkt"
+         "../widget-tools/caution-box.rkt")
 
 (define (get-projects-field projects the-field)
     ;; Get the given field from each of a list of project structs.
@@ -60,11 +62,36 @@
   (define update-button (button-maker "Update" do-nothing))
   (define suspend-button (button-maker "Suspend" do-nothing))
   (define no-new-tasks-button (button-maker "No new tasks" do-nothing))
-  (define detach-project (button-maker "Detach" do-nothing))
+
+  (define unauthorized-message (make-caution-box
+                                (send tab-panel get-parent)
+                                "Authorization with BOINC failed. Check your GUI RPC password settings."
+                                "Authorization failed"))
+
+  (define (show-caution-message message)
+    (send (make-caution-box (send tab-panel get-parent) message "Error")
+          show
+          #t))
+  
+  (define (detach-project-click)
+    (define selected-data (get-listbox-selected-data projects-list))
+    (aif (project? selected-data)
+        (begin
+          (with-handlers
+            ([(lambda (v) (equal? v 'unauthorized))
+              (lambda (v) (send unauthorized-message show #t))])
+            (define result (project-detach (project-master-url selected-data)))
+            (cond
+              [(void? result) (void)]
+              [(error-message? result) (show-caution-message
+                                      (error-message-message result))])))))
+    
+  (define detach-project-button (button-maker "Detach" detach-project-click))
   
   (define projects-list (new-list-box hpane 1000 project-names))
   (send projects-list set-column-width 0 300 0 1000000)
   (send projects-list set-column-label 0 "Project")
+  (set-listbox-data projects-list projects)
   
   (add-to-list "Account" project-accounts)
   (add-to-list "Team" project-teams)
