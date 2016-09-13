@@ -19,8 +19,9 @@
 
 (require racket/gui/base)
 
-(require "../boinc-commands.rkt")
-(require "../boinc-structs.rkt")
+(require "../boinc-commands.rkt"
+         "../boinc-structs.rkt"
+         "../macros.rkt")
 (require "attach-project-window.rkt")
 (require "widget-tools/button-tools.rkt"
          "widget-tools/list-tools.rkt")
@@ -43,16 +44,16 @@
           (lambda (x y) (string<? (available-project-name x)
                                   (available-project-name y)))))
 
-  (define available-project-names (map (lambda (x) (available-project-name x)) available-projects))
+  (define available-project-names (map (lambda (x) (available-project-name x))
+                                       available-projects))
 
   (define projects-list (new-list-box dialog min-width available-project-names))
   (send projects-list min-height min-height)
 
   (define (next-button-click)
     (define selected-data (get-listbox-selected-data projects-list))
-    (if (available-project? selected-data)
-        (show-attach-project-window dialog (available-project-url selected-data))
-        #f))    
+    (aif (available-project? selected-data)
+        (show-attach-project-window dialog (available-project-url selected-data))))
 
   (define button-container (new horizontal-pane%
                                 [parent dialog]
@@ -71,4 +72,3 @@
   (send dialog show #t)
   (send projects-list focus))
                      
-

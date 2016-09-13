@@ -21,12 +21,13 @@
 
 (require racket/gui/base)
 
-(require "../../boinc-commands.rkt")
-(require "../../boinc-structs.rkt")
+(require "../../boinc-commands.rkt"
+         "../../boinc-structs.rkt"
+         "../../macros.rkt")
 (require "../add-project-window.rkt")
 (require "projects-panel.rkt"
-         "tasks-panel.rkt"
-         "../widget-tools/button-tools.rkt"
+         "tasks-panel.rkt")
+(require "../widget-tools/button-tools.rkt"
          "../widget-tools/list-tools.rkt"
          "../widget-tools/tab-tools.rkt")
 
@@ -56,7 +57,7 @@
                    (case (send tp get-selection)
                      ((0) (change-to-notices-panel))
                      ((1) ((lambda () (change-to-projects-panel tab-panel))))
-                     ((2) ((lambda() change-to-tasks-panel tab-panel)))
+                     ((2) ((lambda() (change-to-tasks-panel tab-panel))))
                      ((3) (change-to-transfers-panel))
                      ((4) (change-to-statistics-panel))
                      ((5) (change-to-disk-panel))))]))
@@ -95,9 +96,7 @@
     (define (add-menu-item label)
       (dud-menu-item label parent-menu)
       (make-dud-menu parent-menu (rest items)))
-    (if (empty? items)
-        #f
-        (add-menu-item (first items))))
+    (aif (not (empty? items)) (add-menu-item (first items))))
 
   (define view-menu (new-menu "&View"))
 
@@ -112,7 +111,9 @@
   (view-menu-item "&Disk usage" change-to-disk-panel)
   
   (define tools-menu (new-menu "&Tools"))
-  (new-menu-item "&Add project or account manager..." tools-menu (lambda (x y) (show-add-project-window frame)))
+  (new-menu-item "&Add project or account manager..." tools-menu (lambda (x y)
+                                                                   (show-add-project-window
+                                                                    frame)))
 
   (define tools-menu-items (list "&Options..."
                                  "Computing &preferences..."))

@@ -18,7 +18,7 @@
 ;; along with boinc-racket.  If not, see <http://www.gnu.org/licenses/>.
 
 (require racket/gui/base)
-
+(require "../../macros.rkt")
 (provide add-list-column
          new-list-box
          set-listbox-data
@@ -38,7 +38,14 @@
   (send list-ctrl set-column-width number-of-columns width 0 1000000)
   (set-list-column-items list-ctrl number-of-columns contents))
 
-(define (new-list-box parent min-width choices)
+(define (empty-callback tp e) (void))
+
+(define (make-listbox-callback callback-func)
+  (lambda (sender control-event)
+    (define event-type (send control-event get-event-type))
+    (aif (eq? event-type 'list-box) (callback-func))))
+
+(define (new-list-box parent min-width choices [callback null])
   (new list-box%
        [parent parent]
        [choices choices]
@@ -49,7 +56,8 @@
        [min-width min-width]
        [stretchable-width #t]
        [stretchable-height #t]
-       [label #f]))
+       [label #f]
+       [callback (if (null? callback) empty-callback (make-listbox-callback callback))]))
 
 (define (set-listbox-data list-box data)  
   (define (add-data data counter)

@@ -64,7 +64,8 @@
 ;;                      Some big refactoring of the main window
 ;;
 ;;                      Can detach from a project
-
+;;
+;; 1.2    XX Sep 2016   Some more refactoring of the GUI
 
 #lang racket
 

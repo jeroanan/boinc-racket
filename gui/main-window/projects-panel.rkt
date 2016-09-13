@@ -57,11 +57,21 @@
                             [alignment (list 'center 'top)]))
   
   (define button-maker (get-simple-button-maker button-panel))
-  
+
+  (define (make-button-width label on-click)
+    (define button-width 123)
+    (define new-button (button-maker label on-click))
+    (send new-button min-width button-width))
+
   (define (do-nothing) #f)
-  (define update-button (button-maker "Update" do-nothing))
-  (define suspend-button (button-maker "Suspend" do-nothing))
-  (define no-new-tasks-button (button-maker "No new tasks" do-nothing))
+  (define update-button (make-button-width "Update" do-nothing))
+  (define suspend-button (make-button-width "Suspend" do-nothing))
+
+  (define (no-new-tasks-click)
+    (display (send no-new-tasks-button get-width))
+    (display "\n"))
+
+  (define no-new-tasks-button (make-button-width "No new tasks" no-new-tasks-click))
 
   (define unauthorized-message (make-caution-box
                                 (send tab-panel get-parent)
@@ -86,7 +96,7 @@
               [(error-message? result) (show-caution-message
                                       (error-message-message result))])))))
     
-  (define detach-project-button (button-maker "Detach" detach-project-click))
+  (define detach-project-button (make-button-width "Detach" detach-project-click))
   
   (define projects-list (new-list-box hpane 1000 project-names))
   (send projects-list set-column-width 0 300 0 1000000)
