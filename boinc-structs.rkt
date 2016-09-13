@@ -210,7 +210,8 @@
    sched-priority
    last-rpc-time
    project-files-downloaded-time
-   project-dir))
+   project-dir
+   suspended-via-gui))
 
 (struct name-value (name value))
 

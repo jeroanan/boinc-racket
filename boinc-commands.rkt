@@ -217,11 +217,21 @@
     [(is-success? result) (void)]
     [else (error (string-append "Unknown response: " result))]))
 
+(define (project-update project-url [sock-in null] [sock-out null])
+  (project-authorized-action project-update-xml project-url sock-in sock-out))
+
+(define (project-suspend project-url [sock-in null] [sock-out null])
+  (project-authorized-action project-suspend-xml project-url sock-in sock-out))
+
+(define (project-authorized-action xml-op project-url sock-in sock-out)
+  (define-values (cin cout) (maybe-get-socket sock-in sock-out))
+  (authorize cin cout)
+  (xml-op project-url cin cout))
+                     
 (define (simple-authorized-action action [sock-in null] [sock-out null])
   (define-values (cin cout) (maybe-get-socket sock-in sock-out))
   (authorize cin cout)
-  (define result (action cin cout))  
-  result)
+  (action cin cout))
 
 (define (authorize [sock-in null] [sock-out null])
 

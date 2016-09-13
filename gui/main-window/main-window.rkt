@@ -116,8 +116,7 @@
   (define tools-menu-items (list "&Options..."
                                  "Computing &preferences..."))
   (make-dud-menu tools-menu tools-menu-items)
-  
-  ;;(define activity-menu (new-menu "&Activity"))
+
   (define advanced-menu (new-menu "A&dvanced"))
   (define advanced-menu-items (list "Select computer..."
                                     "Shut down connect client..."

@@ -47,7 +47,9 @@
          lookup-account-xml
          lookup-account-poll-xml
          project-attach-xml
-         project-detach-xml)
+         project-detach-xml
+         project-update-xml
+         project-suspend-xml)
 
 (define (exchange-versions-xml)
   ;; makes an exchange_versions RPC call
@@ -289,9 +291,9 @@
   ;; for it are done
   (project-url-operation "project_dont_detach_when_done" project-url))
 
-(define (project-update project-url)
+(define (project-update-xml project-url [sock-in null] [sock-out null])
   ;; Make a project update with the project server
-  (project-url-operation "project_update" project-url))
+  (project-rpc-with-socket "project_update" project-url sock-in sock-out))
 
 (define (project-no-more-work project-url)
   ;; Request that a project receives no more tasks
@@ -301,9 +303,16 @@
   ;; Reverse a previous request that a project receives no more tasks
   (project-url-operation "project_allowmorework" project-url))
 
-(define (project-suspend project-url)
+(define (project-suspend-xml project-url sock-in sock-out)
   ;; Suspend work on a project
-  (project-url-operation "project_suspend" project-url))
+  (project-rpc-with-socket "project_suspend" project-url sock-in sock-out))
+
+(define (project-rpc-with-socket op project-url sock-in sock-out)
+  (rpc-with-socket
+   (string-append "<" op ">"
+                  "<project_url>" project-url "</project_url>"
+                  "</" op ">")
+   sock-in sock-out))
 
 (define (project-resume project-url)
   ;; Resume work on a project

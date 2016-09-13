@@ -64,9 +64,22 @@
     (send new-button min-width button-width))
 
   (define (do-nothing) #f)
-  (define update-button (make-button-width "Update" do-nothing))
-  (define suspend-button (make-button-width "Suspend" do-nothing))
 
+  (define-syntax (op-click stx-obj)
+    (syntax-case stx-obj (op-click)
+      [(_ operation)
+       #`(lambda ()
+           (define selected-data
+             (get-listbox-selected-data projects-list))
+           (aif (project? selected-data) (operation (project-master-url
+                                                     selected-data))))]))
+
+  (define update-button (make-button-width "Update" (op-click
+                                                      project-update)))  
+  
+  (define suspend-button (make-button-width "Suspend" (op-click
+                                                       project-suspend)))
+  
   (define (no-new-tasks-click)
     (display (send no-new-tasks-button get-width))
     (display "\n"))
