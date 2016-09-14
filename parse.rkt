@@ -69,7 +69,7 @@
   (accumulate-element-list stats parse-project))
 
 (define (parse-project x gs gse gns)
-  (define suspended-via-gui (not (empty? (gns 'suspended-via-gui))))
+  (define suspended-via-gui? (not (empty? (gns 'suspended_via_gui))))
   
   (project (gs 'master_url)
            (gs 'project_name)
@@ -114,7 +114,7 @@
            (gs 'last_rpc_time)
            (gs 'project_files_downloaded_time)
            (gs 'project_dir)
-           suspended-via-gui))
+           suspended-via-gui?))
 
 (define (parse-gui-urls stats [output (list)])
   (if (empty? stats)

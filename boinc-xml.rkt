@@ -49,7 +49,8 @@
          project-attach-xml
          project-detach-xml
          project-update-xml
-         project-suspend-xml)
+         project-suspend-xml
+         project-resume-xml)
 
 (define (exchange-versions-xml)
   ;; makes an exchange_versions RPC call
@@ -307,16 +308,16 @@
   ;; Suspend work on a project
   (project-rpc-with-socket "project_suspend" project-url sock-in sock-out))
 
+(define (project-resume-xml project-url sock-in sock-out)
+  ;; Resume work on a project
+  (project-rpc-with-socket "project_resume" project-url sock-in sock-out))
+
 (define (project-rpc-with-socket op project-url sock-in sock-out)
   (rpc-with-socket
    (string-append "<" op ">"
                   "<project_url>" project-url "</project_url>"
                   "</" op ">")
    sock-in sock-out))
-
-(define (project-resume project-url)
-  ;; Resume work on a project
-  (project-url-operation "project_resume" project-url))
 
 ;; Now we come to authorization. Certain RPC commands can only be run once
 ;; authorization has taken place. An example of this is run-benchmarks-xml.

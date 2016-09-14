@@ -58,10 +58,11 @@
   
   (define button-maker (get-simple-button-maker button-panel))
 
-  (define (make-button-width label on-click)
-    (define button-width 123)
+  (define (make-button label on-click)
+    (define button-width 141)
     (define new-button (button-maker label on-click))
-    (send new-button min-width button-width))
+    (send new-button min-width button-width)
+    new-button)
 
   (define (do-nothing) #f)
 
@@ -74,18 +75,18 @@
            (aif (project? selected-data) (operation (project-master-url
                                                      selected-data))))]))
 
-  (define update-button (make-button-width "Update" (op-click
+  (define update-button (make-button "Update" (op-click
                                                       project-update)))  
   
-  (define suspend-button (make-button-width "Suspend" (op-click
+  (define suspend-button (make-button "Suspend" (op-click
                                                        project-suspend)))
+
+  (define resume-button (make-button "Resume" (op-click project-resume)))
   
-  (define (no-new-tasks-click)
-    (display (send no-new-tasks-button get-width))
-    (display "\n"))
+  (define no-new-tasks-button (make-button "No new tasks" do-nothing))
 
-  (define no-new-tasks-button (make-button-width "No new tasks" no-new-tasks-click))
-
+  (define allow-new-tasks-button (make-button "Allow new tasks" do-nothing))
+    
   (define unauthorized-message (make-caution-box
                                 (send tab-panel get-parent)
                                 "Authorization with BOINC failed. Check your GUI RPC password settings."
@@ -109,9 +110,40 @@
               [(error-message? result) (show-caution-message
                                       (error-message-message result))])))))
     
-  (define detach-project-button (make-button-width "Detach" detach-project-click))
+  (define detach-project-button (make-button "Detach" detach-project-click))
+
+  (define buttons (list update-button
+                        suspend-button
+                        resume-button
+                        no-new-tasks-button
+                        allow-new-tasks-button
+                        detach-project-button))                        
+
+  (define (disable-all-buttons)
+    (for-each (lambda (x) (send x enable #f)) buttons))
+
+  (define (enable-all-buttons)
+    (for-each (lambda (x) (send x enable #t)) buttons))
+
+  (define (project-suspended-button-change selected-data)
+    (define enable-suspend-button
+      (if (project-suspended-via-gui? selected-data) #f #t))
+    (send suspend-button enable enable-suspend-button)
+    (send resume-button enable (not enable-suspend-button)))        
+
+  (define (projects-list-callback)
+    (define selected-item (send projects-list get-selection))
+    (define selected-data (if (eq? selected-item #f)
+                              #f
+                              (send projects-list get-data selected-item)))
+
+    (when (eq? selected-data #f) (disable-all-buttons))
+    (when (project? selected-data) (begin
+                                     (enable-all-buttons)
+                                     (project-suspended-button-change
+                                      selected-data))))
   
-  (define projects-list (new-list-box hpane 1000 project-names))
+  (define projects-list (new-list-box hpane 1000 project-names projects-list-callback))
   (send projects-list set-column-width 0 300 0 1000000)
   (send projects-list set-column-label 0 "Project")
   (set-listbox-data projects-list projects)

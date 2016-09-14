@@ -42,7 +42,6 @@
                    (height tab-height)
                    (width tab-width)))
 
-
 (define tab-panel
   ;; Initialise the tab strip that runs along the top of the main window.
   (new tab-panel%
@@ -129,7 +128,7 @@
   (make-dud-menu advanced-menu advanced-menu-items))
 
 (define (launch-gui)
-  (aif (not (send frame get-menu-bar)) (init-menu))
+  (unless (send frame get-menu-bar) (init-menu))
   (send frame show #t)
   (send tab-panel set-selection 1)
   (change-to-tasks-panel tab-panel))
