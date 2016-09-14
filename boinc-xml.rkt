@@ -50,7 +50,8 @@
          project-detach-xml
          project-update-xml
          project-suspend-xml
-         project-resume-xml)
+         project-resume-xml
+         project-no-more-work-xml)
 
 (define (exchange-versions-xml)
   ;; makes an exchange_versions RPC call
@@ -296,19 +297,19 @@
   ;; Make a project update with the project server
   (project-rpc-with-socket "project_update" project-url sock-in sock-out))
 
-(define (project-no-more-work project-url)
+(define (project-no-more-work-xml project-url [sock-in null] [sock-out null])
   ;; Request that a project receives no more tasks
-  (project-url-operation "project_nomorework" project-url))
+  (project-rpc-with-socket "project_nomorework" project-url sock-in sock-out))
 
 (define (project-allow-more-work project-url)
   ;; Reverse a previous request that a project receives no more tasks
   (project-url-operation "project_allowmorework" project-url))
 
-(define (project-suspend-xml project-url sock-in sock-out)
+(define (project-suspend-xml project-url [sock-in null] [sock-out null])
   ;; Suspend work on a project
   (project-rpc-with-socket "project_suspend" project-url sock-in sock-out))
 
-(define (project-resume-xml project-url sock-in sock-out)
+(define (project-resume-xml project-url [sock-in null] [sock-out null])
   ;; Resume work on a project
   (project-rpc-with-socket "project_resume" project-url sock-in sock-out))
 

@@ -69,6 +69,8 @@
 ;;
 ;;                      Closing and then re-opening main window no longer causes
 ;;                      an error
+;;
+;;                      Can suspend and resume projects
 
 #lang racket
 

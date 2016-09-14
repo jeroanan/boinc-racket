@@ -83,8 +83,9 @@
 
   (define resume-button (make-button "Resume" (op-click project-resume)))
   
-  (define no-new-tasks-button (make-button "No new tasks" do-nothing))
-
+  (define no-new-tasks-button (make-button "No new tasks" (op-click
+                                                           project-no-more-work)))
+  
   (define allow-new-tasks-button (make-button "Allow new tasks" do-nothing))
     
   (define unauthorized-message (make-caution-box
