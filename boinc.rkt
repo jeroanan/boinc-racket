@@ -65,7 +65,7 @@
 ;;
 ;;                      Can detach from a project
 ;;
-;; 1.2    XX Sep 2016   Some more refactoring of the GUI
+;; 1.2    14 Sep 2016   Some more refactoring of the GUI
 ;;
 ;;                      Closing and then re-opening main window no longer causes
 ;;                      an error
