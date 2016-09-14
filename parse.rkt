@@ -70,6 +70,7 @@
 
 (define (parse-project x gs gse gns)
   (define suspended-via-gui? (not (empty? (gns 'suspended_via_gui))))
+  (define dont-request-more-work? (not (empty? (gns 'dont_request_more_work))))
   
   (project (gs 'master_url)
            (gs 'project_name)
@@ -114,7 +115,8 @@
            (gs 'last_rpc_time)
            (gs 'project_files_downloaded_time)
            (gs 'project_dir)
-           suspended-via-gui?))
+           suspended-via-gui?
+           dont-request-more-work?))
 
 (define (parse-gui-urls stats [output (list)])
   (if (empty? stats)

@@ -71,6 +71,8 @@
 ;;                      an error
 ;;
 ;;                      Can suspend and resume projects
+;;
+;;                      Can disallow and allow more work for a project
 
 #lang racket
 

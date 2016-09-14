@@ -230,6 +230,10 @@
   (project-authorized-action project-no-more-work-xml project-url sock-in
                              sock-out))
 
+(define (project-allow-more-work project-url [sock-in null] [sock-out null])
+  (project-authorized-action project-allow-more-work-xml project-url sock-in
+                             sock-out))
+
 (define (project-authorized-action xml-op project-url sock-in sock-out)
   (define-values (cin cout) (maybe-get-socket sock-in sock-out))
   (authorize cin cout)

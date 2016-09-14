@@ -211,7 +211,8 @@
    last-rpc-time
    project-files-downloaded-time
    project-dir
-   suspended-via-gui?))
+   suspended-via-gui?
+   dont-request-more-work?))
 
 (struct name-value (name value))
 

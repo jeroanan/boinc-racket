@@ -86,8 +86,9 @@
   (define no-new-tasks-button (make-button "No new tasks" (op-click
                                                            project-no-more-work)))
   
-  (define allow-new-tasks-button (make-button "Allow new tasks" do-nothing))
-    
+  (define allow-new-tasks-button (make-button "Allow new tasks" (op-click
+                                                                 project-allow-more-work)))
+      
   (define unauthorized-message (make-caution-box
                                 (send tab-panel get-parent)
                                 "Authorization with BOINC failed. Check your GUI RPC password settings."
@@ -132,6 +133,12 @@
     (send suspend-button enable enable-suspend-button)
     (send resume-button enable (not enable-suspend-button)))        
 
+  (define (no-new-tasks-button-change selected-data)
+    (define enable-no-new-tasks-button
+      (if (project-dont-request-more-work? selected-data) #f #t))
+    (send no-new-tasks-button enable enable-no-new-tasks-button)
+    (send allow-new-tasks-button enable (not enable-no-new-tasks-button)))
+  
   (define (projects-list-callback)
     (define selected-item (send projects-list get-selection))
     (define selected-data (if (eq? selected-item #f)
@@ -142,8 +149,10 @@
     (when (project? selected-data) (begin
                                      (enable-all-buttons)
                                      (project-suspended-button-change
+                                      selected-data)
+                                     (no-new-tasks-button-change
                                       selected-data))))
-  
+    
   (define projects-list (new-list-box hpane 1000 project-names projects-list-callback))
   (send projects-list set-column-width 0 300 0 1000000)
   (send projects-list set-column-label 0 "Project")
