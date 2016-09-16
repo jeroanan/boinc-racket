@@ -56,13 +56,7 @@
                             [parent hpane]
                             [alignment (list 'center 'top)]))
   
-  (define button-maker (get-simple-button-maker button-panel))
-
-  (define (make-button label on-click)
-    (define button-width 141)
-    (define new-button (button-maker label on-click))
-    (send new-button min-width button-width)
-    new-button)
+  (define button-maker (get-simple-button-maker button-panel 141))
 
   (define (do-nothing) #f)
 
@@ -75,19 +69,20 @@
            (aif (project? selected-data) (operation (project-master-url
                                                      selected-data))))]))
 
-  (define update-button (make-button "Update" (op-click
-                                                      project-update)))  
+  (define update-button (button-maker "Update"
+                                      (op-click project-update)))  
   
-  (define suspend-button (make-button "Suspend" (op-click
-                                                       project-suspend)))
+  (define suspend-button (button-maker "Suspend"
+                                       (op-click project-suspend)))
 
-  (define resume-button (make-button "Resume" (op-click project-resume)))
+  (define resume-button (button-maker "Resume" (op-click project-resume)))
   
-  (define no-new-tasks-button (make-button "No new tasks" (op-click
-                                                           project-no-more-work)))
+  (define no-new-tasks-button (button-maker "No new tasks"
+                                            (op-click project-no-more-work)))
   
-  (define allow-new-tasks-button (make-button "Allow new tasks" (op-click
-                                                                 project-allow-more-work)))
+  (define allow-new-tasks-button (button-maker "Allow new tasks"
+                                               (op-click
+                                                project-allow-more-work)))
       
   (define unauthorized-message (make-caution-box
                                 (send tab-panel get-parent)
@@ -112,7 +107,7 @@
               [(error-message? result) (show-caution-message
                                       (error-message-message result))])))))
     
-  (define detach-project-button (make-button "Detach" detach-project-click))
+  (define detach-project-button (button-maker "Detach" detach-project-click))
 
   (define buttons (list update-button
                         suspend-button
@@ -121,11 +116,11 @@
                         allow-new-tasks-button
                         detach-project-button))                        
 
-  (define (disable-all-buttons)
-    (for-each (lambda (x) (send x enable #f)) buttons))
+  (define (toggle-all-buttons-enabled enabled?)
+    (for-each (lambda (x) (send x enable enabled?)) buttons))
 
-  (define (enable-all-buttons)
-    (for-each (lambda (x) (send x enable #t)) buttons))
+  (define (disable-all-buttons) (toggle-all-buttons-enabled #f))
+  (define (enable-all-buttons) (toggle-all-buttons-enabled #t))
 
   (define (project-suspended-button-change selected-data)
     (define enable-suspend-button

@@ -23,14 +23,14 @@
 (require "../../boinc-commands.rkt"
          "../../boinc-structs.rkt")
 (require "../widget-tools/list-tools.rkt"
-         "../widget-tools/tab-tools.rkt")
+         "../widget-tools/tab-tools.rkt"
+         "../widget-tools/button-tools.rkt")
 
 (define (change-to-tasks-panel tab-panel)
   
   (define results (get-results))
   
-  (define (gtf the-field)
-    (map (lambda (x) (the-field x)) results))
+  (define (gtf the-field) (map the-field results))
   
   (define task-names (gtf result-name))
   (define project-urls (gtf result-project-url))
@@ -41,10 +41,35 @@
     (map (lambda (x) (active-task-fraction-done (result-active-tasks x))) results))
   
   (define tasks-panel (new panel% [parent tab-panel]))
+  (define hpane (new horizontal-pane% [parent tasks-panel]))
+
+  (define button-panel (new vertical-panel%
+                            [parent hpane]
+                            [alignment (list 'center 'top)]))                            
   
-  (define tasks-list (new-list-box tasks-panel 1000 project-urls))
+  (define tasks-list (new-list-box hpane 1000 project-urls))
   (send tasks-list set-column-width 0 300 0 1000000)
   (send tasks-list set-column-label 0 "Project")
+  (set-listbox-data tasks-list results)
+
+  (define button-maker (get-simple-button-maker button-panel 141))
+
+  (define (do-nothing) #f)
+
+  (define-syntax (op-click stx-obj)
+    (syntax-case stx-obj (op-click)
+      [(_ operation)
+       #`(lambda ()
+           (define selected-data
+             (get-listbox-selected-data tasks-list))
+           (when (result? selected-data) (operation [result-name selected-data]                                                    
+                                                    [result-project-url
+                                                     selected-data])))]))  
+  
+  (define suspend-button (button-maker "Suspend" (op-click suspend-result)))
+  (define resume-button (button-maker "Resume" (op-click resume-result)))
+  (define abort-button (button-maker "Abort" (op-click abort-result)))
+  (define properties-button (button-maker "Properties" do-nothing))
 
   (define (add-to-list label contents)
     (add-list-column tasks-list label 300 contents))

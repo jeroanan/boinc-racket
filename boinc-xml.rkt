@@ -52,7 +52,10 @@
          project-suspend-xml
          project-resume-xml
          project-no-more-work-xml
-         project-allow-more-work-xml)
+         project-allow-more-work-xml
+         suspend-result-xml
+         resume-result-xml
+         abort-result-xml)
 
 (define (exchange-versions-xml)
   ;; makes an exchange_versions RPC call
@@ -109,7 +112,7 @@
   ;; Quit boinc client
   (rpc-call "<quit />"))
 
-(define (project-op op result-name project-url)
+(define (result-op op result-name project-url)
   ;; Makes rpc call for a generic project operation -- see following functions
   (rpc-call
    (string-append "<" op ">"
@@ -117,17 +120,20 @@
                   "<project_url>" project-url "</project-url>"
                   "</" op ">")))
 
-(define (abort-result result-name project-url)
+(define (abort-result-xml result-name project-url [sock-in null] [sock-out null])
   ;; Abort result
-  (project-op "abort_result" result-name project-url))
+  (result-rpc-with-socket "abort_result" result-name project-url sock-in sock-out))
 
-(define (suspend-result result-name project-url)
+(define (suspend-result-xml result-name project-url [sock-in null]
+                            [sock-out null])
   ;; Suspend result
-  (project-op "suspend_result" result-name project-url))
+  (display project-url)
+  (result-rpc-with-socket "suspend_result" result-name project-url sock-in
+                          sock-out))  
 
-(define (resume-result result-name project-url)
+(define (resume-result-xml result-name project-url [sock-in null] [sock-out null])  
   ;; Resume result
-  (project-op "resume_result" result-name project-url))
+  (result-rpc-with-socket "resume_result" result-name project-url sock-in sock-out))
 
 (define (get-disk-usage-xml)
   ;; Get disk usage
@@ -315,13 +321,6 @@
   ;; Resume work on a project
   (project-rpc-with-socket "project_resume" project-url sock-in sock-out))
 
-(define (project-rpc-with-socket op project-url sock-in sock-out)
-  (rpc-with-socket
-   (string-append "<" op ">"
-                  "<project_url>" project-url "</project_url>"
-                  "</" op ">")
-   sock-in sock-out))
-
 ;; Now we come to authorization. Certain RPC commands can only be run once
 ;; authorization has taken place. An example of this is run-benchmarks-xml.
 ;; Authorization occurs against a single TCP connection to the BOINC client.
@@ -358,6 +357,22 @@
   ;; Stops execution of tasks. Runs hardware benchmarks on the computer running
   ;; the BOINC client.
   (rpc-with-socket "<run_benchmarks />" sock-in sock-out))
+
+(define (result-rpc-with-socket op result-name project-url [sock-in null]
+                                [sock-out null])
+  (rpc-with-socket
+   (string-append "<" op ">"
+                  "<name>" result-name "</name>"
+                  "<project_url>" project-url "</project_url>"
+                  "</" op ">")
+   sock-in sock-out))
+
+(define (project-rpc-with-socket op project-url [sock-in null] [sock-out null])
+  (rpc-with-socket
+   (string-append "<" op ">"
+                  "<project_url>" project-url "</project_url>"
+                  "</" op ">")
+   sock-in sock-out))
 
 (define (rpc-with-socket xml [sock-in null] [sock-out null])
   ;; Sends the given XML as an RPC call using the given input and output

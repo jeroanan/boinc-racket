@@ -234,10 +234,26 @@
   (project-authorized-action project-allow-more-work-xml project-url sock-in
                              sock-out))
 
-(define (project-authorized-action xml-op project-url sock-in sock-out)
+(define (suspend-result result-name project-url [sock-in null] [sock-out null])
+  (result-authorized-action suspend-result-xml result-name project-url sock-in
+                            sock-out))
+
+(define (resume-result result-name project-url [sock-in null] [sock-out null])
+  (result-authorized-action resume-result-xml result-name project-url sock-in sock-out))
+
+(define (abort-result result-name project-url [sock-in null] [sock-out null])
+  (result-authorized-action abort-result-xml result-name project-url sock-in sock-out))
+  
+(define (project-authorized-action xml-op project-url [sock-in null] [sock-out null])
   (define-values (cin cout) (maybe-get-socket sock-in sock-out))
   (authorize cin cout)
   (xml-op project-url cin cout))
+
+(define (result-authorized-action xml-op result-name project-url [sock-in null]
+                                  [sock-out null])
+  (define-values (cin cout) (maybe-get-socket sock-in sock-out))
+  (authorize cin cout)
+  (xml-op result-name project-url cin cout))
                      
 (define (simple-authorized-action action [sock-in null] [sock-out null])
   (define-values (cin cout) (maybe-get-socket sock-in sock-out))

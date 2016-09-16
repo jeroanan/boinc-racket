@@ -21,13 +21,16 @@
 
 (provide get-simple-button-maker)
 
-(define (get-simple-button-maker parent)
+(define (get-simple-button-maker parent [min-width null])
   ;; Get a function that can be used to create a button with a label and an
   ;; on-click event.
   ;;
   ;; Parameters:
   ;;
   ;; parent: The control that will be the parent of the new button
+  ;;
+  ;; min-width: Set the min-width of the new buttons if provided.
+  ;;            useful if a group of uniformly-sized buttons is desired.
   ;;
   ;; Returns:
   ;; A function taking the following parameters:
@@ -36,11 +39,14 @@
   ;; on-click: A function with no arguments that will be executed when the
   ;; button is clicked.
   (lambda (label on-click)
-    (new button%
-         [parent parent]
-         [label label]
-         [callback
-          (make-button-click-callback on-click)])))  
+    (define new-button (new button%
+                            [parent parent]
+                            [label label]
+                            [callback
+                             (make-button-click-callback on-click)]))
+    (unless (null? min-width) (send new-button min-width min-width))
+    new-button))
+      
 
 (define (make-button-click-callback callback-func)
   (lambda (sender control-event)
