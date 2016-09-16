@@ -74,7 +74,7 @@
 ;;
 ;;                      Can disallow and allow more work for a project
 ;;
-;; 1.3    XX Sep 2016   Can suspend and resume results
+;; 1.3    16 Sep 2016   Can suspend and resume results
 ;;                      Can abort results
 
 #lang racket
