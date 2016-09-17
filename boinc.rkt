@@ -76,6 +76,8 @@
 ;;
 ;; 1.3    16 Sep 2016   Can suspend and resume results
 ;;                      Can abort results
+;;
+;; 1.4    XX Sep 2016   More work on GUI
 
 #lang racket
 

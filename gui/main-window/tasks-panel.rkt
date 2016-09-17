@@ -45,9 +45,33 @@
 
   (define button-panel (new vertical-panel%
                             [parent hpane]
-                            [alignment (list 'center 'top)]))                            
+                            [alignment (list 'center 'top)]))                           
+ 
+  (define (toggle-all-buttons-enabled enabled?)
+    (for-each (lambda (x) (send x enable enabled?)) buttons))
+
+  (define (disable-all-buttons) (toggle-all-buttons-enabled #f))
+  (define (enable-all-buttons) (toggle-all-buttons-enabled #t))
   
-  (define tasks-list (new-list-box hpane 1000 project-urls))
+  (define (suspend-button-change selected-data)
+    (define enable-suspend-button? 
+      (if (result-suspended-via-gui? selected-data) #f #t))
+    (send suspend-button enable enable-suspend-button?)
+    (send resume-button enable (not enable-suspend-button?)))
+
+  (define (tasks-list-callback)
+    (define selected-item (send tasks-list get-selection))
+    (define selected-data (if (eq? selected-item #f)
+                              #f
+                              (send tasks-list get-data selected-item)))
+    (when (eq? selected-data #f) (disable-all-buttons))
+    (when (result? selected-data) (begin
+                                  (enable-all-buttons)
+                                  (suspend-button-change selected-data)
+                                  selected-data
+                                  selected-data)))
+
+  (define tasks-list (new-list-box hpane 1000 project-urls tasks-list-callback))
   (send tasks-list set-column-width 0 300 0 1000000)
   (send tasks-list set-column-label 0 "Project")
   (set-listbox-data tasks-list results)
@@ -71,6 +95,11 @@
   (define abort-button (button-maker "Abort" (op-click abort-result)))
   (define properties-button (button-maker "Properties" do-nothing))
 
+  (define buttons (list suspend-button
+                        resume-button
+                        abort-button
+                        properties-button))
+	
   (define (add-to-list label contents)
     (add-list-column tasks-list label 300 contents))
 

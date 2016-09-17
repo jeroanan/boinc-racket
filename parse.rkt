@@ -135,6 +135,8 @@
     (accumulate-element-list stats parse-result))
 
 (define (parse-result x gs gse gns)
+  (define suspended-via-gui? (not (empty? (gns 'suspended_via_gui))))
+
   (result (gs 'name)
           (gs 'wu-name)
           (gs 'version_num)
@@ -147,7 +149,8 @@
           (gs 'report_deadline)
           (gs 'received_time)
           (gs 'estimated_cpu_time_remaining)
-          (parse-active-task (gse 'active_task))))
+          (parse-active-task (gse 'active_task))
+          suspended-via-gui?))
 
 (define (parse-active-task stats)
     (let* ((gs (lambda (x) (get-stat-value stats  x))))

@@ -148,7 +148,8 @@
    report-deadline
    received-time
    estimated-cpu-time-remaining
-   active-tasks))
+   active-tasks
+   suspended-via-gui?)) 
 
 (struct active-task
   (active-task-state
