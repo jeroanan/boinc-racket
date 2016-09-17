@@ -291,3 +291,13 @@
 (struct error-message (message))
 
 (struct project-authenticator (authenticator))
+
+(struct notice (title
+                description
+		create-time
+		arrival-time
+		is-private?
+		project-name
+		category
+		link
+		seqno))

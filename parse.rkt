@@ -41,6 +41,7 @@
 (provide parse-screensaver-tasks)
 (provide parse-simple-gui-info)
 (provide parse-statistics)
+(provide parse-notices)
 
 (define (parse-host-info stats)
   (let ((gs (lambda (x) (get-stat-value stats x))))
@@ -408,3 +409,18 @@
   (let ((gs (lambda (x) (get-stat-value nodes x))))
     (struct-type (gs member1)
                  (gs member2))))
+
+(define (parse-notice x gs gse gns)
+  (notice (gs 'title)
+    (gs 'description)
+    (gs 'create_time)
+    (gs 'arrival_time)
+    (gs 'is_private)
+    (gs 'project_name)
+    (gs 'category)
+    (gs 'link)
+    (gs 'seqno)))
+
+(define (parse-notices nodes)
+  (filter (lambda (x) (not (eq? "" (notice-description x)))) 
+          (accumulate-element-list nodes parse-notice)))

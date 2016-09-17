@@ -80,7 +80,11 @@
 
 (define (get-notices-public)
   ;; To be done -- currently I have empty notices
-  (get-notices-public-xml))
+  (let* ((root-xml (xexpr-get-document-element (get-notices-public-xml)))
+         (main-node (get-node root-xml 'notices)))
+  (display main-node)
+  (display "\n")
+  (get-notices-public-xml)))
 
 (define (get-screensaver-tasks)
   (let* ((root-xml (xexpr-get-document-element (get-screensaver-tasks-xml)))
@@ -103,7 +107,10 @@
   (simple-authorized-action get-cc-config-xml))
 
 (define (get-notices)
-  (simple-authorized-action get-notices-xml))
+  (let* ((root-xml (xexpr-get-document-element (simple-authorized-action get-notices-xml)))
+         (main-node (get-node root-xml 'notices)))
+
+    (parse-notices main-node)))
 
 (define (get-account-manager-info)
   (simple-authorized-action get-account-manager-info-xml))
