@@ -24,6 +24,7 @@
 (require "xexpr-utils.rkt")
 (require "parse.rkt")
 (require "socket-util.rkt")
+(require "config.rkt")
 
 (provide (all-defined-out))
 
@@ -278,7 +279,7 @@
       nonce))
   
   (define (get-password)
-    (file->string "/tmp/gui_rpc_auth.cfg"))
+    (file->string (get-gui-rpc-auth-file-location)))
 
   (let* ((string-to-encode (string-append (get-nonce) (get-password)))
          (nonce-hash (bytes->string/utf-8 (md5 string-to-encode))))         

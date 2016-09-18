@@ -394,9 +394,10 @@
     ;; Read the given input socket  until the close of an rpc reply is read.
     ;; Not much good if one is never received, though. This really needs to be
     ;; fixed.
-    (let ((line-in (read-line cin)))
-      (if (string-suffix? line-in "</boinc_gui_rpc_reply>")
-          (string-append buffer line-in) (read-in cin (string-append buffer line-in)))))
+    (define line-in (read-line cin))
+    (if (string-suffix? line-in "</boinc_gui_rpc_reply>")
+      (string-append buffer line-in) 
+      (read-in cin (string-append buffer line-in))))
 
   (define-values (cin cout) (maybe-get-socket sock-in sock-out))
     

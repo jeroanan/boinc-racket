@@ -75,10 +75,16 @@
 ;;                      Can disallow and allow more work for a project
 ;;
 ;; 1.3    16 Sep 2016   Can suspend and resume results
+;;
 ;;                      Can abort results
 ;;
 ;; 1.4    XX Sep 2016   More work on GUI
-
+;;
+;;                      Can now parse notices
+;;
+;;                      Added config.json to contain per-installation configuration
+;;
+;;                      Added gui_rpc_auth_file_location configuration setting
 #lang racket
 
 ;; This file is basically something that holds the change log and references to
