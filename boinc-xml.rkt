@@ -55,7 +55,9 @@
          project-allow-more-work-xml
          suspend-result-xml
          resume-result-xml
-         abort-result-xml)
+         abort-result-xml
+	 get-project-config-poll-xml
+	 get-project-config-xml)
 
 (define (exchange-versions-xml)
   ;; makes an exchange_versions RPC call
@@ -352,6 +354,15 @@
                                  nonce-hash
                                  "</nonce_hash></auth2>")))
     (rpc-call xml-str sock-in sock-out)))    
+
+(define (get-project-config-xml project-url [sock-in null] [sock-out null])
+  ;; Get project config. Requires authorization.
+
+  (rpc-with-socket (string-append "<get_project_config><url>" project-url "</url></get_project_config>") 
+                   sock-in sock-out))
+
+(define (get-project-config-poll-xml [sock-in null] [sock-out null])
+  (rpc-with-socket "<get_project_config_poll/>" sock-in sock-out))
 
 (define (run-benchmarks-xml [sock-in null] [sock-out null])
   ;; Stops execution of tasks. Runs hardware benchmarks on the computer running

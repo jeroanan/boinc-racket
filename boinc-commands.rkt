@@ -156,6 +156,13 @@
                                                             "<error>"
                                                             "</error>"))
 
+(define (is-lookup-pending? msg) (and
+                                      (is-error? msg)
+                                      (equal?
+                                       (get-inner-string msg "<error_num>"
+                                                         "</error_num>")
+                                       "-204")))
+
 (define (is-unauthorized? msg) (string-contains? msg "unauthorized"))
 (define (is-error? msg) (string-contains? msg "error"))
 (define (is-success? msg) (string-contains? msg "success"))
@@ -175,14 +182,7 @@
 
   (define (do-lookup-poll)
     (define (is-account-out? msg) (string-contains? msg "account_out"))
-    (define (is-lookup-pending? msg) (and
-                                      (is-account-out? msg)
-                                      (is-error? msg)
-                                      (equal?
-                                       (get-inner-string msg "<error_num>"
-                                                         "</error_num>")
-                                       "-204")))
-    (define (is-authenticator? msg) (string-contains? msg "authenticator"))
+        (define (is-authenticator? msg) (string-contains? msg "authenticator"))
     
     (sleep 2) ;; This causes the main thread to lock out.
               ;; So I really need run lookup-account in a separate thread.
@@ -252,6 +252,24 @@
 (define (abort-result result-name project-url [sock-in null] [sock-out null])
   (result-authorized-action abort-result-xml result-name project-url sock-in sock-out))
   
+(define (get-project-config) 
+  
+  (define-values (sock-in sock-out) (maybe-get-socket null null))
+
+  (define (get-project-config-poll) 
+    (define poll-result (simple-authorized-action get-project-config-poll-xml sock-in sock-out))
+    (display poll-result)
+    (sleep 2) ;; This causes the main thread to lock out.
+    (cond
+      [(is-lookup-pending? poll-result) (get-project-config-poll)]))
+
+  (define (do-operation sock-in sock-out)
+    (get-project-config-xml "https://bam.boincstats.com" sock-in sock-out))
+
+  (simple-authorized-action do-operation sock-in sock-out)
+  (get-project-config-poll)) 
+
+
 (define (project-authorized-action xml-op project-url [sock-in null] [sock-out null])
   (define-values (cin cout) (maybe-get-socket sock-in sock-out))
   (authorize cin cout)

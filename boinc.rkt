@@ -85,6 +85,9 @@
 ;;                      Added config.json to contain per-installation configuration
 ;;
 ;;                      Added gui_rpc_auth_file_location configuration setting
+;;
+;;                      Added xml/command for get_project_config
+
 #lang racket
 
 ;; This file is basically something that holds the change log and references to
