@@ -87,7 +87,8 @@
 ;;                      Added gui_rpc_auth_file_location configuration setting
 ;;
 ;;                      Added xml/command for get_project_config
-
+;;
+;;                      Can attach to account managers
 #lang racket
 
 ;; This file is basically something that holds the change log and references to

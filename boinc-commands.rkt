@@ -258,7 +258,6 @@
 
   (define (get-project-config-poll) 
     (define poll-result (simple-authorized-action get-project-config-poll-xml sock-in sock-out))
-    (display poll-result)
     (sleep 2) ;; This causes the main thread to lock out.
     (cond
       [(is-lookup-pending? poll-result) (get-project-config-poll)]))
@@ -269,6 +268,22 @@
   (simple-authorized-action do-operation sock-in sock-out)
   (get-project-config-poll)) 
 
+(define (account-manager-rpc url username password [sock-in null] [sock-out null])
+  (define (poll)
+    ;; error -189 == Invalid URL
+    ;;       -112 == Invalid username/password
+    ;;          0 == success
+
+    (define poll-result (simple-authorized-action account-manager-rpc-poll-xml sock-in sock-out))
+    (sleep 2) ;; This causes the main thread to lock out.
+    (cond 
+      [(is-lookup-pending? poll-result) (poll)]))
+
+  (define (do-operation sock-in sock-out)
+        (account-manager-rpc-xml url username password sock-in sock-out)
+    (poll))
+
+  (simple-authorized-action do-operation sock-in sock-out))
 
 (define (project-authorized-action xml-op project-url [sock-in null] [sock-out null])
   (define-values (cin cout) (maybe-get-socket sock-in sock-out))

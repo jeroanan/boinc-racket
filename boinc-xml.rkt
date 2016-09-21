@@ -57,7 +57,9 @@
          resume-result-xml
          abort-result-xml
 	 get-project-config-poll-xml
-	 get-project-config-xml)
+	 get-project-config-xml
+	 account-manager-rpc-xml
+	 account-manager-rpc-poll-xml)
 
 (define (exchange-versions-xml)
   ;; makes an exchange_versions RPC call
@@ -366,8 +368,21 @@
 
 (define (run-benchmarks-xml [sock-in null] [sock-out null])
   ;; Stops execution of tasks. Runs hardware benchmarks on the computer running
-  ;; the BOINC client.
+  ;; the BOINC client. Requires authorization.
   (rpc-with-socket "<run_benchmarks />" sock-in sock-out))
+
+(define (account-manager-rpc-xml url username password [sock-in null] [sock-out null])
+  ;; Attaches to the account manager at the given url with the given username and password.
+  ;; Requires authorization.
+  (define xml (string-append "<acct_mgr_rpc>"
+                               "<url>" url "</url>"
+			       "<name>" username "</name>"
+			       "<password>" password "</password>"
+			     "</acct_mgr_rpc>"))
+  (rpc-with-socket xml sock-in sock-out))
+
+(define (account-manager-rpc-poll-xml [sock-in null] [sock-out null])
+  (rpc-call "<acct_mgr_rpc_poll/>" sock-in sock-out)) 
 
 (define (result-rpc-with-socket op result-name project-url [sock-in null]
                                 [sock-out null])
@@ -393,28 +408,31 @@
     (maybe-close-socket sock-in cin cout)
     result))
 
-(define (rpc-call xml [sock-in null] [sock-out null])                      
-  ;; Perform an RPC call with the given xml. The given xml should not be
-  ;; wrapped in gui_rpc_request elements as these are added in here.
-
-  (define (get-gui-rpc-request-xml inner-xml)
-    ;; Construct gui_rpc_request xml. It ends with a new line and character 0x03.
-    (string-append "<gui_rpc_request>" inner-xml "</gui_rpc_request>\n\003"))
+(define (base-rpc-call-xml xml request-tag-name reply-end-tag [sock-in null] [sock-out null])
 
   (define (read-in cin [buffer ""])
     ;; Read the given input socket  until the close of an rpc reply is read.
     ;; Not much good if one is never received, though. This really needs to be
     ;; fixed.
     (define line-in (read-line cin))
-    (if (string-suffix? line-in "</boinc_gui_rpc_reply>")
+    (if (string-suffix? line-in reply-end-tag)
       (string-append buffer line-in) 
       (read-in cin (string-append buffer line-in))))
 
   (define-values (cin cout) (maybe-get-socket sock-in sock-out))
     
-  (display (get-gui-rpc-request-xml xml) cout)
+  (display (string-append "<" request-tag-name ">" xml "</" request-tag-name ">\n\003") cout)
   (flush-output cout)
 
   (define xml-in (string-trim (read-in cin) "\u0003"))
   (maybe-close-socket sock-in cin cout)
   xml-in)
+ 
+(define (rpc-call xml [sock-in null] [sock-out null])                      
+  ;; Perform an RPC call with the given xml. The given xml should not be
+  ;; wrapped in gui_rpc_request elements as these are added in here.
+  (base-rpc-call-xml xml "gui_rpc_request" "</boinc_gui_rpc_reply>" sock-in sock-out)) 
+
+  
+
+
