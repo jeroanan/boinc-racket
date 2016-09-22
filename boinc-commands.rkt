@@ -126,6 +126,10 @@
 (define (run-benchmarks)
   (simple-authorized-action run-benchmarks-xml))
 
+(define (get-file-transfers)
+  (define root-xml (get-main-node get-file-transfers-xml 'file_transfers))
+  (parse-file-transfers root-xml))
+
 (define (get-string-index string-in search-substring [counter 0])
   ;; Find search-substring in string-in. Returns the index of the first
   ;; character of search-subsring's first occurrence in string-in. If

@@ -59,7 +59,8 @@
 	 get-project-config-poll-xml
 	 get-project-config-xml
 	 account-manager-rpc-xml
-	 account-manager-rpc-poll-xml)
+	 account-manager-rpc-poll-xml
+         get-file-transfers-xml)
 
 (define (exchange-versions-xml)
   ;; makes an exchange_versions RPC call
@@ -154,6 +155,10 @@
 (define (get-message-count-xml)
   ;; Get message count
   (rpc-call "<get_message_count />"))
+
+(define (get-file-transfers-xml)
+  ;; Get pending file transfers.
+  (rpc-call "<get_file_transfers />"))
 
 (define (get-notices-xml [sock-in null] [sock-out null])
   ;; Get notices. Requires authorization.

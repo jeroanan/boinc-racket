@@ -89,6 +89,8 @@
 ;;                      Added xml/command for get_project_config
 ;;
 ;;                      Can attach to account managers
+;;
+;;                      Can parse file transfers
 #lang racket
 
 ;; This file is basically something that holds the change log and references to

@@ -301,3 +301,17 @@
 		category
 		link
 		seqno))
+
+(struct file-transfer (project-url
+                       project-name
+		       name
+		       nbytes
+		       max-nbytes
+		       status
+		       num-retries        ;; In the XML this field and on are
+		       first-request-time ;; given in a persistent_file_xfer
+		       next-request-time  ;; element. However since it seems
+		       time-so-far        ;; there is only ever one, I am just
+		       last-bytes-transferred ;; including them here.
+		       is-upload))
+

@@ -42,6 +42,7 @@
 (provide parse-simple-gui-info)
 (provide parse-statistics)
 (provide parse-notices)
+(provide parse-file-transfers)
 
 (define (parse-host-info stats)
   (let ((gs (lambda (x) (get-stat-value stats x))))
@@ -424,3 +425,34 @@
 (define (parse-notices nodes)
   (filter (lambda (x) (not (eq? "" (notice-description x)))) 
           (accumulate-element-list nodes parse-notice)))
+
+(define (parse-file-transfer x gs gse gns)
+  (define persistent-node (gns 'persistent_file_xfer))
+  (define pd (parse-persistent-file-transfer persistent-node))
+
+  (file-transfer (gs 'project_url)
+                 (gs 'project_name)
+		 (gs 'name)
+		 (gs 'nbytes)
+		 (gs 'max_nbytes)
+		 (gs 'status)
+		 (first pd)
+		 (second pd)
+		 (third pd)
+		 (fourth pd)
+		 (fifth pd)
+		 (sixth pd)))
+
+(define (parse-persistent-file-transfer node)
+  
+  (define (gs x) (get-stat-value (first node) x))
+  (list (gs 'num_retries)
+        (gs 'first_request_time)
+	(gs 'next_request_time)
+	(gs 'time_so_far)
+	(gs 'last_bytes_transferred)
+	(gs 'is_upload)))
+
+(define (parse-file-transfers nodes)
+  (define transfer-nodes (filter (lambda (x) (not (empty? x))) nodes))
+  (accumulate-element-list transfer-nodes parse-file-transfer))
