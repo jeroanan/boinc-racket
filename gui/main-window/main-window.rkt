@@ -69,7 +69,64 @@
   (dt index (list new-panel)))
 
 (define (change-to-notices-panel) (change-to-panel 0))
-(define (change-to-transfers-panel) (change-to-panel 3))
+
+(define (change-to-transfers-panel) 
+  
+  (define transfers (get-file-transfers))
+
+  (define (gtf the-field) (map the-field transfers))
+
+  ;; Columns required:
+  ;;
+  ;; 1. Project
+  ;; 2. File
+  ;; 3. Progress
+  ;; 4. Size
+  ;; 5. Elapsed
+  ;; 6. Speed
+  ;; 7. Status
+
+  (define (get-transfer-progress downloaded-so-far total-size)
+    (define so-far-number (string->number downloaded-so-far))
+    (define total-number (string->number total-size))
+
+    (define (number-or-zero number) (if (number? number) number 0))
+
+    (define nbytes (number-or-zero total-size))
+    (define max-nbytes (number-or-zero so-far-number))
+
+    (number->string (if (eq? 0 nbytes)
+                        0
+	                (* 100 (/ max-nbytes nbytes)))))
+
+  (define project-names (gtf file-transfer-project-name))
+  (define file-names (gtf file-transfer-name))
+  (define progress (map (lambda (x) (get-transfer-progress (file-transfer-max-nbytes x) 
+                                                           (file-transfer-nbytes x))) transfers))
+
+  (define sizes (gtf file-transfer-nbytes))
+  (define elapsed (gtf file-transfer-time-so-far))
+  ;; todo: transfer speed calculations
+  (define statuses (gtf file-transfer-status))
+
+  (define transfers-panel (new panel% [parent tab-panel]))
+  
+  (define transfers-list (new-list-box transfers-panel 1000 project-names (lambda () #f)))
+  (send transfers-list set-column-width 0 300 0 1000000)
+  (send transfers-list set-column-label 0 "Project")
+
+  (define (add-to-list label contents)
+    (add-list-column transfers-list label 300 contents))
+
+  (add-to-list "Filename" file-names)
+  (add-to-list "Progress" progress)
+  (add-to-list "Size" sizes)
+  (add-to-list "Time elapsed" elapsed)
+  ;;todo: speed column
+  (add-to-list "Status" statuses)
+
+  (draw-tab tab-panel 3 (list transfers-panel)))
+
 (define (change-to-statistics-panel) (change-to-panel 4))
 (define (change-to-disk-panel) (change-to-panel 5))
 

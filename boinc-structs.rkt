@@ -305,8 +305,8 @@
 (struct file-transfer (project-url
                        project-name
 		       name
-		       nbytes
-		       max-nbytes
+		       nbytes ;; total size of transfer
+		       max-nbytes ;; bytes downloaded so far
 		       status
 		       num-retries        ;; In the XML this field and on are
 		       first-request-time ;; given in a persistent_file_xfer
