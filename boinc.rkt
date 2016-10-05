@@ -91,6 +91,10 @@
 ;;                      Can attach to account managers
 ;;
 ;;                      Can parse file transfers
+;;
+;;                      Add gui for attaching to account manager
+;;
+;;                      Add file transfers to the gui
 #lang racket
 
 ;; This file is basically something that holds the change log and references to
